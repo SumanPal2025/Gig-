@@ -1,0 +1,30 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Outer subtle glow circle -->
+    <path
+        android:fillColor="#22FFFFFF"
+        android:pathData="M54,22 A32,32 0 1,0 54,86 A32,32 0 1,0 54,22 Z" />
+
+    <!-- Roof of the House in crisp White -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,28 L28,48 L32,52 L54,35 L76,52 L80,48 Z" />
+
+    <!-- House Body -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M34,49 L34,76 C34,78.2 35.8,80 38,80 L70,80 C72.2,80 74,78.2 74,76 L74,49 L54,34 Z" />
+
+    <!-- Inner Cooperative Caring Shield / Hands Heart cutout in #146B4A -->
+    <path
+        android:fillColor="#146B4A"
+        android:pathData="M54,50 C48,44 40,49 40,56 C40,64 50,71 54,74 C58,71 68,64 68,56 C68,49 60,44 54,50 Z" />
+
+    <!-- Golden Warm Center Emblem (Fair Opportunity Sun / Trust Star) in #F4B942 -->
+    <path
+        android:fillColor="#F4B942"
+        android:pathData="M54,54 C51.8,54 50,55.8 50,58 C50,60.2 51.8,62 54,62 C56.2,62 58,60.2 58,58 C58,55.8 56.2,54 54,54 Z" />
+</vector>
