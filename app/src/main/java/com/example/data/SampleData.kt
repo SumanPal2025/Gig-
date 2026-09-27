@@ -44,6 +44,34 @@ object SampleData {
       duration = "30 - 45 mins",
       cooperativeGuarantee = "Direct co-op member compensation",
       popularFeatures = listOf("No predatory middleman fee", "Standardized rate card", "Rapid arrival")
+    ),
+    ServiceItem(
+      id = "srv_cleaning",
+      name = "Cleaning",
+      category = "Home Deep Cleaning",
+      iconName = "cleaning_services",
+      shortDescription = "Full home deep sanitization, bathroom scrubbing, kitchen de-greasing.",
+      priceRange = "₹499 - ₹1,899",
+      startingPrice = 499,
+      rating = 4.90f,
+      reviewCount = 1250,
+      duration = "60 - 90 mins",
+      cooperativeGuarantee = "Eco-safe certified detergents • Verified staff",
+      popularFeatures = listOf("Hospital-grade disinfectant", "Experienced co-op crew", "Satisfaction guaranteed")
+    ),
+    ServiceItem(
+      id = "srv_salon",
+      name = "Salon",
+      category = "Grooming & Wellness",
+      iconName = "spa",
+      shortDescription = "Hair styling, beard grooming, facial treatments and head massage at home.",
+      priceRange = "₹249 - ₹999",
+      startingPrice = 249,
+      rating = 4.94f,
+      reviewCount = 980,
+      duration = "30 - 60 mins",
+      cooperativeGuarantee = "Hygienic single-use kits • Professional stylists",
+      popularFeatures = listOf("Single-use sterilized kits", "Experienced co-op stylists", "No commute hassle")
     )
   )
 

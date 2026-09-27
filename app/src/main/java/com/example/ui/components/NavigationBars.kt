@@ -64,6 +64,14 @@ enum class AdminNavDestination(val route: String, val title: String, val icon: I
   SETTINGS("/admin/settings", "Settings", Icons.Default.Settings)
 }
 
+val customerPrimaryNavDestinations = listOf(
+  CustomerNavDestination.HOME,
+  CustomerNavDestination.BOOKINGS,
+  CustomerNavDestination.INSTA_HELP,
+  CustomerNavDestination.MESSAGES,
+  CustomerNavDestination.PROFILE
+)
+
 @Composable
 fun CustomerBottomBar(
   currentRoute: String,
@@ -76,7 +84,7 @@ fun CustomerBottomBar(
     tonalElevation = 6.dp,
     modifier = modifier.windowInsetsPadding(WindowInsets.navigationBars)
   ) {
-    CustomerNavDestination.values().forEach { destination ->
+    customerPrimaryNavDestinations.forEach { destination ->
       val selected = currentRoute == destination.route
       val isInstaHelp = destination == CustomerNavDestination.INSTA_HELP
 
@@ -235,138 +243,30 @@ fun HomezyAuthenticatedTopBar(
         }
       }
 
-      Row(
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
+      // Logout action button
+      Surface(
+        shape = RoundedCornerShape(4.dp),
+        color = Color.White.copy(alpha = 0.18f),
+        onClick = onLogout,
+        modifier = Modifier.testTag("app_logout_btn")
       ) {
-        // Role switch tabs for quick testing and RBAC validation
-        AppRole.values().forEach { role ->
-          val isCurrentRole = role == currentUser.role
-          Surface(
-            shape = RoundedCornerShape(4.dp),
-            color = if (isCurrentRole) Color.White.copy(alpha = 0.35f) else Color.White.copy(alpha = 0.12f),
-            onClick = { onAttemptRoleSwitch(role) },
-            modifier = Modifier.testTag("role_tab_${role.name.lowercase()}")
-          ) {
-            Text(
-              text = role.label,
-              fontSize = 9.sp,
-              fontWeight = if (isCurrentRole) FontWeight.Bold else FontWeight.Normal,
-              color = Color.White,
-              modifier = Modifier.padding(horizontal = 5.dp, vertical = 3.dp)
-            )
-          }
-        }
-
-        // Logout action button
-        Surface(
-          shape = RoundedCornerShape(4.dp),
-          color = Color.White.copy(alpha = 0.18f),
-          onClick = onLogout,
-          modifier = Modifier.testTag("app_logout_btn")
+        Row(
+          modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
+          verticalAlignment = Alignment.CenterVertically
         ) {
-          Row(
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Icon(
-              imageVector = Icons.Default.Logout,
-              contentDescription = "Logout",
-              tint = Color.White,
-              modifier = Modifier.size(12.dp)
-            )
-            Spacer(modifier = Modifier.width(2.dp))
-            Text(
-              text = "Logout",
-              fontSize = 10.sp,
-              fontWeight = FontWeight.Bold,
-              color = Color.White
-            )
-          }
-        }
-      }
-    }
-  }
-}
-
-@Composable
-fun RoleSwitcherBar(
-  currentRole: AppRole,
-  onRoleSelected: (AppRole) -> Unit,
-  modifier: Modifier = Modifier
-) {
-  Surface(
-    color = HomezyPrimary,
-    contentColor = Color.White,
-    modifier = modifier.fillMaxWidth()
-  ) {
-    Column(
-      modifier = Modifier
-        .fillMaxWidth()
-        .padding(horizontal = 16.dp, vertical = 8.dp)
-    ) {
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Box(
-            modifier = Modifier
-              .size(26.dp)
-              .clip(RoundedCornerShape(6.dp))
-              .background(HomezyAccent),
-            contentAlignment = Alignment.Center
-          ) {
-            Icon(
-              imageVector = Icons.Default.Handshake,
-              contentDescription = null,
-              tint = HomezyText,
-              modifier = Modifier.size(16.dp)
-            )
-          }
-          Spacer(modifier = Modifier.width(8.dp))
+          Icon(
+            imageVector = Icons.Default.Logout,
+            contentDescription = "Logout",
+            tint = Color.White,
+            modifier = Modifier.size(14.dp)
+          )
+          Spacer(modifier = Modifier.width(4.dp))
           Text(
-            text = "HOMEZY",
-            fontWeight = FontWeight.ExtraBold,
-            fontSize = 16.sp,
-            letterSpacing = 1.sp,
+            text = "Logout",
+            fontSize = 11.sp,
+            fontWeight = FontWeight.Bold,
             color = Color.White
           )
-        }
-      }
-
-      Spacer(modifier = Modifier.height(6.dp))
-
-      // 3-Role Pills
-      Row(
-        modifier = Modifier
-          .fillMaxWidth()
-          .clip(RoundedCornerShape(8.dp))
-          .background(Color.Black.copy(alpha = 0.2f))
-          .padding(3.dp),
-        horizontalArrangement = Arrangement.spacedBy(4.dp)
-      ) {
-        AppRole.values().forEach { role ->
-          val isSelected = role == currentRole
-          Box(
-            modifier = Modifier
-              .weight(1f)
-              .clip(RoundedCornerShape(6.dp))
-              .background(if (isSelected) HomezyCard else Color.Transparent)
-              .clickable { onRoleSelected(role) }
-              .padding(vertical = 5.dp),
-            contentAlignment = Alignment.Center
-          ) {
-            Text(
-              text = role.label,
-              fontSize = 11.sp,
-              fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-              color = if (isSelected) HomezyPrimary else Color.White.copy(alpha = 0.85f),
-              maxLines = 1,
-              overflow = TextOverflow.Ellipsis
-            )
-          }
         }
       }
     }

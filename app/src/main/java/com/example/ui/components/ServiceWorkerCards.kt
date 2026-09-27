@@ -1,5 +1,6 @@
 package com.example.ui.components
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
@@ -8,7 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -178,19 +179,25 @@ fun WorkerCard(
   onBookWorker: (WorkerProfile) -> Unit,
   modifier: Modifier = Modifier
 ) {
+  var showProfileDetails by remember { mutableStateOf(false) }
+
   HomezyCard(
     modifier = modifier.fillMaxWidth(),
     elevation = 1.dp
   ) {
+    // Top Row: Worker name, verified badge, skill, rating
     Row(
       modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.Top
     ) {
-      // Worker Avatar with verification badge
-      Box(modifier = Modifier.size(52.dp)) {
+      Row(
+        modifier = Modifier.weight(1f),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
         Box(
           modifier = Modifier
-            .size(52.dp)
+            .size(44.dp)
             .clip(CircleShape)
             .background(HomezyPrimaryContainer),
           contentAlignment = Alignment.Center
@@ -198,163 +205,173 @@ fun WorkerCard(
           Text(
             text = worker.name.split(" ").mapNotNull { it.firstOrNull()?.toString() }.take(2).joinToString(""),
             fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
+            fontSize = 15.sp,
             color = HomezyPrimary
           )
         }
-        if (worker.isVerified) {
-          Box(
-            modifier = Modifier
-              .size(18.dp)
-              .clip(CircleShape)
-              .background(HomezySecondary)
-              .align(Alignment.BottomEnd),
-            contentAlignment = Alignment.Center
-          ) {
-            Icon(
-              imageVector = Icons.Default.Check,
-              contentDescription = "Verified Co-op Worker",
-              tint = Color.White,
-              modifier = Modifier.size(11.dp)
-            )
-          }
-        }
-      }
-
-      Spacer(modifier = Modifier.width(12.dp))
-
-      Column(modifier = Modifier.weight(1f)) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(
-            text = worker.name,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-            color = HomezyText
-          )
-          HomezyBadge(
-            text = "★ ${worker.rating}",
-            containerColor = HomezyAccentContainer,
-            contentColor = Color(0xFF92400E)
-          )
-        }
-
-        Text(
-          text = worker.trade,
-          fontSize = 13.sp,
-          color = HomezyTextSecondary,
-          fontWeight = FontWeight.Medium
-        )
-
-        Spacer(modifier = Modifier.height(2.dp))
-        Text(
-          text = "Co-op ID: ${worker.cooperativeId} • ${worker.completedJobs} jobs completed",
-          fontSize = 11.sp,
-          color = HomezyPrimary
-        )
-
-        Spacer(modifier = Modifier.height(4.dp))
-        Row(
-          verticalAlignment = Alignment.CenterVertically,
-          horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
+        Spacer(modifier = Modifier.width(10.dp))
+        Column {
           Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(
-              imageVector = Icons.Default.LocationOn,
-              contentDescription = null,
-              tint = HomezyTextSecondary,
-              modifier = Modifier.size(13.dp)
-            )
-            Spacer(modifier = Modifier.width(3.dp))
             Text(
-              text = "${worker.locationArea} (${worker.distanceKm} km)",
-              fontSize = 11.sp,
-              color = HomezyTextSecondary
+              text = worker.name,
+              fontWeight = FontWeight.Bold,
+              fontSize = 15.sp,
+              color = HomezyText
             )
-          }
-
-          // Availability indicator
-          Surface(
-            shape = RoundedCornerShape(12.dp),
-            color = if (worker.isAvailable) Color(0xFFDCFCE7) else Color(0xFFFEF3C7)
-          ) {
-            Row(
-              modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp),
-              verticalAlignment = Alignment.CenterVertically
-            ) {
-              Box(
-                modifier = Modifier
-                  .size(6.dp)
-                  .clip(CircleShape)
-                  .background(if (worker.isAvailable) Color(0xFF16A34A) else Color(0xFFD97706))
-              )
+            if (worker.isVerified) {
               Spacer(modifier = Modifier.width(4.dp))
+              Icon(
+                imageVector = Icons.Default.CheckCircle,
+                contentDescription = "Verified",
+                tint = HomezySecondary,
+                modifier = Modifier.size(15.dp)
+              )
+              Spacer(modifier = Modifier.width(2.dp))
               Text(
-                text = if (worker.isAvailable) "Available Today" else "Busy on Job",
-                fontSize = 10.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = if (worker.isAvailable) Color(0xFF166534) else Color(0xFF92400E)
+                text = "Verified",
+                fontSize = 11.sp,
+                fontWeight = FontWeight.Medium,
+                color = HomezySecondary
               )
             }
           }
+          Text(
+            text = worker.trade,
+            fontSize = 13.sp,
+            color = HomezyTextSecondary
+          )
         }
       }
-    }
 
-    Spacer(modifier = Modifier.height(10.dp))
-
-    // Skill pills
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.spacedBy(6.dp)
-    ) {
-      worker.skills.take(3).forEach { skill ->
-        Surface(
-          shape = RoundedCornerShape(6.dp),
-          color = HomezySurfaceVariant
+      // Rating badge
+      Surface(
+        shape = RoundedCornerShape(6.dp),
+        color = HomezyAccentContainer
+      ) {
+        Row(
+          modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp),
+          verticalAlignment = Alignment.CenterVertically
         ) {
+          Icon(
+            imageVector = Icons.Default.Star,
+            contentDescription = null,
+            tint = Color(0xFFD97706),
+            modifier = Modifier.size(12.dp)
+          )
+          Spacer(modifier = Modifier.width(3.dp))
           Text(
-            text = skill,
-            fontSize = 11.sp,
-            color = HomezyTextSecondary,
-            modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+            text = "${worker.rating}",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Bold,
+            color = HomezyText
           )
         }
       }
     }
 
-    Spacer(modifier = Modifier.height(12.dp))
-    Divider(color = HomezyBorder, thickness = 0.8.dp)
-    Spacer(modifier = Modifier.height(10.dp))
+    Spacer(modifier = Modifier.height(8.dp))
 
+    // Second Row: Distance and Availability
     Row(
       modifier = Modifier.fillMaxWidth(),
       horizontalArrangement = Arrangement.SpaceBetween,
       verticalAlignment = Alignment.CenterVertically
     ) {
-      Column {
-        Text(
-          text = "Estimated price",
-          fontSize = 11.sp,
-          color = HomezyTextSecondary
+      Row(verticalAlignment = Alignment.CenterVertically) {
+        Icon(
+          imageVector = Icons.Default.LocationOn,
+          contentDescription = null,
+          tint = HomezyTextSecondary,
+          modifier = Modifier.size(14.dp)
         )
+        Spacer(modifier = Modifier.width(3.dp))
         Text(
-          text = "₹${worker.hourlyRate}",
-          fontSize = 16.sp,
-          fontWeight = FontWeight.Bold,
-          color = HomezyText
+          text = "${worker.distanceKm} km away",
+          fontSize = 12.sp,
+          color = HomezyTextSecondary
         )
       }
 
-      HomezyButton(
-        text = "Book Worker",
+      Surface(
+        shape = RoundedCornerShape(4.dp),
+        color = if (worker.isAvailable) Color(0xFFDCFCE7) else Color(0xFFFEF3C7)
+      ) {
+        Text(
+          text = if (worker.isAvailable) "Available Now" else "Busy",
+          fontSize = 10.sp,
+          fontWeight = FontWeight.SemiBold,
+          color = if (worker.isAvailable) Color(0xFF166534) else Color(0xFF92400E),
+          modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
+        )
+      }
+    }
+
+    // Progressive Disclosure: Details ONLY when user asks
+    AnimatedVisibility(visible = showProfileDetails) {
+      Column(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(top = 10.dp)
+          .clip(RoundedCornerShape(8.dp))
+          .background(HomezySurfaceVariant)
+          .padding(10.dp)
+      ) {
+        Text(
+          text = "Worker Profile & Verification",
+          fontWeight = FontWeight.Bold,
+          fontSize = 12.sp,
+          color = HomezyPrimary
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text("• Experience: ${worker.experienceYears} years", fontSize = 11.sp, color = HomezyText)
+        Text("• Skills: ${worker.skills.joinToString(", ")}", fontSize = 11.sp, color = HomezyText)
+        Text("• Jobs completed: ${worker.completedJobs}", fontSize = 11.sp, color = HomezyText)
+        Text("• Detailed rating: ★ ${worker.rating} (${(worker.completedJobs * 0.9).toInt()} reviews)", fontSize = 11.sp, color = HomezyText)
+        Text("• Service Area: ${worker.locationArea}", fontSize = 11.sp, color = HomezyText)
+        Text("• Availability: ${if (worker.isAvailable) "Immediate dispatch" else "Next slot tomorrow"}", fontSize = 11.sp, color = HomezyText)
+        Text("• Cooperative ID: ${worker.cooperativeId}", fontSize = 11.sp, color = HomezyText)
+        Text("• Welfare: Enrolled in Co-op Health & Accident Pool", fontSize = 11.sp, color = HomezySecondary)
+      }
+    }
+
+    Spacer(modifier = Modifier.height(10.dp))
+
+    // Action Row: [ View Profile ] and [ Book Now ]
+    Row(
+      modifier = Modifier.fillMaxWidth(),
+      horizontalArrangement = Arrangement.spacedBy(8.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      OutlinedButton(
+        onClick = { showProfileDetails = !showProfileDetails },
+        shape = RoundedCornerShape(8.dp),
+        modifier = Modifier
+          .weight(1f)
+          .testTag("view_profile_${worker.id}"),
+        colors = ButtonDefaults.outlinedButtonColors(contentColor = HomezyPrimary)
+      ) {
+        Text(
+          text = if (showProfileDetails) "Hide Profile" else "View Profile",
+          fontSize = 12.sp,
+          fontWeight = FontWeight.SemiBold
+        )
+      }
+
+      Button(
         onClick = { onBookWorker(worker) },
-        variant = ButtonVariant.PRIMARY,
-        testTag = "book_worker_${worker.id}"
-      )
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = HomezyPrimary),
+        modifier = Modifier
+          .weight(1f)
+          .testTag("book_worker_${worker.id}")
+      ) {
+        Text(
+          text = "Book Now",
+          fontSize = 12.sp,
+          fontWeight = FontWeight.Bold,
+          color = Color.White
+        )
+      }
     }
   }
 }
@@ -364,137 +381,68 @@ fun InstaHelpBanner(
   onGetHelpNow: () -> Unit,
   modifier: Modifier = Modifier
 ) {
-  Box(
+  Card(
+    shape = RoundedCornerShape(12.dp),
+    colors = CardDefaults.cardColors(containerColor = Color(0xFFFEF3C7)),
+    border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFFFDE68A)),
     modifier = modifier
       .fillMaxWidth()
-      .clip(RoundedCornerShape(20.dp))
-      .background(
-        Brush.horizontalGradient(
-          colors = listOf(Color(0xFFDC2626), Color(0xFF991B1B))
-        )
-      )
-      .padding(18.dp)
       .testTag("insta_help_banner_card")
   ) {
-    Column {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(14.dp),
+      horizontalArrangement = Arrangement.SpaceBetween,
+      verticalAlignment = Alignment.CenterVertically
+    ) {
       Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.weight(1f),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        HomezyBadge(
-          text = "INSTA HELP • PRIORITY DISPATCH",
-          containerColor = Color(0xFFFEF08A),
-          contentColor = Color(0xFF854D0E),
-          icon = Icons.Default.Bolt
-        )
-
-        Surface(
-          shape = RoundedCornerShape(12.dp),
-          color = Color.White.copy(alpha = 0.2f),
-          modifier = Modifier.padding(2.dp)
+        Box(
+          modifier = Modifier
+            .size(40.dp)
+            .clip(CircleShape)
+            .background(Color(0xFFF59E0B)),
+          contentAlignment = Alignment.Center
         ) {
-          Row(
-            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Box(
-              modifier = Modifier
-                .size(8.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF4ADE80))
-            )
-            Spacer(modifier = Modifier.width(6.dp))
-            Text(
-              text = "Workers Ready",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = Color.White
-            )
-          }
+          Icon(
+            imageVector = Icons.Default.Bolt,
+            contentDescription = null,
+            tint = Color.White,
+            modifier = Modifier.size(22.dp)
+          )
+        }
+        Spacer(modifier = Modifier.width(12.dp))
+        Column {
+          Text(
+            text = "Need help right now?",
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color(0xFF92400E)
+          )
+          Text(
+            text = "Find a nearby verified worker.",
+            fontSize = 12.sp,
+            color = Color(0xFFB45309)
+          )
         }
       }
 
-      Spacer(modifier = Modifier.height(10.dp))
-
-      Text(
-        text = "Need help right now?",
-        fontSize = 22.sp,
-        fontWeight = FontWeight.ExtraBold,
-        color = Color.White
-      )
-
-      Spacer(modifier = Modifier.height(3.dp))
-
-      Text(
-        text = "Find the nearest available verified worker for electrical, plumbing, or AC emergencies.",
-        fontSize = 13.sp,
-        color = Color.White.copy(alpha = 0.95f),
-        lineHeight = 18.sp
-      )
-
-      Spacer(modifier = Modifier.height(14.dp))
-
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+      Button(
+        onClick = onGetHelpNow,
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFD97706)),
+        contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
+        modifier = Modifier.testTag("insta_help_cta")
       ) {
-        Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-          Surface(
-            shape = RoundedCornerShape(6.dp),
-            color = Color.White.copy(alpha = 0.15f)
-          ) {
-            Text(
-              "⚡ Electrical",
-              fontSize = 11.sp,
-              color = Color.White,
-              fontWeight = FontWeight.SemiBold,
-              modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-            )
-          }
-          Surface(
-            shape = RoundedCornerShape(6.dp),
-            color = Color.White.copy(alpha = 0.15f)
-          ) {
-            Text(
-              "💧 Plumbing",
-              fontSize = 11.sp,
-              color = Color.White,
-              fontWeight = FontWeight.SemiBold,
-              modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-            )
-          }
-          Surface(
-            shape = RoundedCornerShape(6.dp),
-            color = Color.White.copy(alpha = 0.15f)
-          ) {
-            Text(
-              "❄️ AC",
-              fontSize = 11.sp,
-              color = Color.White,
-              fontWeight = FontWeight.SemiBold,
-              modifier = Modifier.padding(horizontal = 6.dp, vertical = 3.dp)
-            )
-          }
-        }
-
-        Button(
-          onClick = onGetHelpNow,
-          shape = RoundedCornerShape(10.dp),
-          colors = ButtonDefaults.buttonColors(
-            containerColor = Color.White,
-            contentColor = Color(0xFFDC2626)
-          ),
-          contentPadding = PaddingValues(horizontal = 14.dp, vertical = 8.dp),
-          modifier = Modifier.testTag("insta_help_cta")
-        ) {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(Icons.Default.FlashOn, contentDescription = null, modifier = Modifier.size(16.dp))
-            Spacer(modifier = Modifier.width(4.dp))
-            Text("INSTA HELP", fontSize = 12.sp, fontWeight = FontWeight.ExtraBold)
-          }
-        }
+        Text(
+          text = "Get Help",
+          fontSize = 13.sp,
+          fontWeight = FontWeight.Bold,
+          color = Color.White
+        )
       }
     }
   }

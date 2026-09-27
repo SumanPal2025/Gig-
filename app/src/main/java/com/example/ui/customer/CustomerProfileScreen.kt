@@ -1,38 +1,43 @@
 package com.example.ui.customer
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
+import androidx.compose.material.icons.automirrored.filled.HelpOutline
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.components.*
+import com.example.data.AuthUser
+import com.example.ui.components.HomezyCard
 import com.example.ui.theme.*
 
 @Composable
 fun CustomerProfileScreen(
-  onSwitchToWorker: () -> Unit,
-  onSwitchToAdmin: () -> Unit,
+  onSwitchToWorker: () -> Unit = {},
+  onSwitchToAdmin: () -> Unit = {},
   onLogout: () -> Unit = {},
-  currentUser: com.example.data.AuthUser? = null,
+  currentUser: AuthUser? = null,
   modifier: Modifier = Modifier
 ) {
-  var selectedLanguage by remember { mutableStateOf("English (EN)") }
+  var selectedLanguage by remember { mutableStateOf("English") }
   var showLanguageDialog by remember { mutableStateOf(false) }
+  var showInfoDialog by remember { mutableStateOf<String?>(null) }
 
-  val languages = listOf("English (EN)", "हिंदी (Hindi)", "ಕನ್ನಡ (Kannada)", "தமிழ் (Tamil)", "తెలుగు (Telugu)")
+  val languages = listOf("English", "हिंदी (Hindi)", "ಕನ್ನಡ (Kannada)", "தமிழ் (Tamil)")
 
   LazyColumn(
     modifier = modifier
@@ -42,211 +47,151 @@ fun CustomerProfileScreen(
     contentPadding = PaddingValues(16.dp),
     verticalArrangement = Arrangement.spacedBy(14.dp)
   ) {
-    // Profile Header
+    // Top Profile Header
+    item {
+      Row(
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+      ) {
+        Box(
+          modifier = Modifier
+            .size(54.dp)
+            .clip(CircleShape)
+            .background(HomezyPrimary),
+          contentAlignment = Alignment.Center
+        ) {
+          Text(
+            text = currentUser?.avatarInitials ?: "PS",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = Color.White
+          )
+        }
+        Spacer(modifier = Modifier.width(14.dp))
+        Column {
+          Text(
+            text = currentUser?.name ?: "Priya Sundaram",
+            fontWeight = FontWeight.Bold,
+            fontSize = 18.sp,
+            color = HomezyText
+          )
+          Text(
+            text = currentUser?.email ?: "customer@homezy.demo",
+            fontSize = 13.sp,
+            color = HomezyTextSecondary
+          )
+        }
+      }
+    }
+
+    // Grouped Simple List Rows:
+    // Personal Information, Saved Address, Language, Payments, Bookings, Help
     item {
       HomezyCard(modifier = Modifier.fillMaxWidth()) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Box(
-            modifier = Modifier
-              .size(60.dp)
-              .clip(CircleShape)
-              .background(HomezyPrimary),
-            contentAlignment = Alignment.Center
-          ) {
-            Text(
-              text = currentUser?.avatarInitials ?: "PS",
-              fontWeight = FontWeight.Bold,
-              fontSize = 20.sp,
-              color = Color.White
-            )
-          }
+        Column {
+          ProfileListRow(
+            title = "Personal Information",
+            icon = Icons.Default.PersonOutline,
+            onClick = { showInfoDialog = "Name: ${currentUser?.name ?: "Priya Sundaram"}\nPhone: ${currentUser?.phone ?: "+91 98451 90812"}\nEmail: ${currentUser?.email ?: "customer@homezy.demo"}" }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
 
-          Spacer(modifier = Modifier.width(14.dp))
+          ProfileListRow(
+            title = "Saved Address",
+            icon = Icons.Default.LocationOn,
+            onClick = { showInfoDialog = "Saved Address:\nFlat 402, Green Glen Layout, Bellandur, Outer Ring Road, Bengaluru - 560103" }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
 
-          Column(modifier = Modifier.weight(1f)) {
-            Text(
-              text = currentUser?.name ?: "Priya Sundaram",
-              fontWeight = FontWeight.Bold,
-              fontSize = 18.sp,
-              color = HomezyText
-            )
-            Text(
-              text = currentUser?.email ?: "customer@homezy.demo",
-              fontSize = 13.sp,
-              color = HomezyTextSecondary
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            HomezyBadge(
-              text = "Patron Member • Tier Silver",
-              containerColor = HomezyPrimaryContainer,
-              contentColor = HomezyPrimary
-            )
-          }
+          ProfileListRow(
+            title = "Language",
+            subtitle = selectedLanguage,
+            icon = Icons.Default.Language,
+            onClick = { showLanguageDialog = true }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
+
+          ProfileListRow(
+            title = "Payments",
+            subtitle = "UPI & Card details",
+            icon = Icons.Default.CreditCard,
+            onClick = { showInfoDialog = "Payment Methods:\n• UPI: customer@okaxis (Primary)\n• Card: Visa ending in 8921" }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
+
+          ProfileListRow(
+            title = "Bookings",
+            subtitle = "History & Receipts",
+            icon = Icons.Default.CalendarToday,
+            onClick = { showInfoDialog = "All previous cooperative booking invoices are preserved and accessible from the Bookings tab." }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
+
+          ProfileListRow(
+            title = "Help & Support",
+            icon = Icons.AutoMirrored.Filled.HelpOutline,
+            onClick = { showInfoDialog = "Cooperative Helpdesk:\nHelpline: 1800-425-HOMEZY\nEmail: support@homezy.coop" }
+          )
         }
       }
     }
 
-    // Cooperative Patronage Reward Box
+    // Logout
     item {
-      HomezyCard(
-        modifier = Modifier.fillMaxWidth(),
-        backgroundColor = HomezySurfaceVariant,
-        borderColor = HomezyPrimary.copy(alpha = 0.3f)
+      Spacer(modifier = Modifier.height(6.dp))
+      Button(
+        onClick = onLogout,
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFFFEE2E2),
+          contentColor = Color(0xFFDC2626)
+        ),
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(48.dp)
+          .testTag("customer_logout_btn")
       ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Column {
-            Text(
-              text = "Co-op Patronage Dividend",
-              fontSize = 12.sp,
-              fontWeight = FontWeight.Medium,
-              color = HomezyTextSecondary
-            )
-            Text(
-              text = "₹240.00",
-              fontSize = 22.sp,
-              fontWeight = FontWeight.Bold,
-              color = HomezyPrimary
-            )
-          }
-
-          Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = HomezyAccent
-          ) {
-            Text(
-              text = "Redeemable on next booking",
-              fontSize = 11.sp,
-              fontWeight = FontWeight.Bold,
-              color = HomezyText,
-              modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-            )
-          }
-        }
-        Spacer(modifier = Modifier.height(8.dp))
-        Text(
-          text = "As a cooperative patron, platform surplus is distributed back to household customers and service workers rather than venture capitalists.",
-          fontSize = 11.sp,
-          color = HomezyTextSecondary,
-          lineHeight = 16.sp
-        )
-      }
-    }
-
-    // Saved Addresses
-    item {
-      Text(
-        text = "Saved Addresses",
-        fontWeight = FontWeight.Bold,
-        fontSize = 15.sp,
-        color = HomezyText
-      )
-    }
-
-    item {
-      HomezyCard(modifier = Modifier.fillMaxWidth()) {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Box(
-            modifier = Modifier
-              .size(36.dp)
-              .clip(CircleShape)
-              .background(HomezyPrimaryContainer),
-            contentAlignment = Alignment.Center
-          ) {
-            Icon(imageVector = Icons.Default.Home, contentDescription = null, tint = HomezyPrimary, modifier = Modifier.size(18.dp))
-          }
-          Spacer(modifier = Modifier.width(12.dp))
-          Column(modifier = Modifier.weight(1f)) {
-            Text("Home", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-            Text("Flat 402, Green Glen Layout, Bellandur, Bengaluru", fontSize = 12.sp, color = HomezyTextSecondary)
-          }
-          Icon(imageVector = Icons.Default.Check, contentDescription = "Default", tint = HomezySecondary)
-        }
-      }
-    }
-
-    // Language & Localization (For rural and semi-urban users)
-    item {
-      Text(
-        text = "Preferences & Accessibility",
-        fontWeight = FontWeight.Bold,
-        fontSize = 15.sp,
-        color = HomezyText
-      )
-    }
-
-    item {
-      HomezyCard(
-        modifier = Modifier.fillMaxWidth(),
-        onClick = { showLanguageDialog = true }
-      ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Row(verticalAlignment = Alignment.CenterVertically) {
-            Icon(imageVector = Icons.Default.Translate, contentDescription = null, tint = HomezyPrimary)
-            Spacer(modifier = Modifier.width(12.dp))
-            Column {
-              Text("Regional Language", fontWeight = FontWeight.Bold, fontSize = 14.sp)
-              Text(selectedLanguage, fontSize = 12.sp, color = HomezyTextSecondary)
-            }
-          }
-          Icon(imageVector = Icons.Default.ChevronRight, contentDescription = null, tint = HomezyTextSecondary)
-        }
-      }
-    }
-
-    // Session & Role Actions
-    item {
-      Column(modifier = Modifier.fillMaxWidth()) {
-        HomezyButton(
-          text = "Logout of Account",
-          onClick = onLogout,
-          variant = ButtonVariant.DANGER,
-          icon = Icons.Default.Logout,
-          modifier = Modifier.fillMaxWidth().testTag("customer_logout_btn")
-        )
+        Icon(Icons.Default.Logout, contentDescription = null, modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Logout", fontSize = 14.sp, fontWeight = FontWeight.Bold)
       }
     }
   }
 
-  // Language Picker Dialog
+  // Info Dialog
+  if (showInfoDialog != null) {
+    AlertDialog(
+      onDismissRequest = { showInfoDialog = null },
+      title = { Text("Details", fontWeight = FontWeight.Bold, color = HomezyText) },
+      text = { Text(showInfoDialog ?: "", fontSize = 14.sp, color = HomezyText) },
+      confirmButton = {
+        TextButton(onClick = { showInfoDialog = null }) {
+          Text("Close", fontWeight = FontWeight.Bold, color = HomezyPrimary)
+        }
+      }
+    )
+  }
+
+  // Language Dialog
   if (showLanguageDialog) {
-    HomezyModal(
-      visible = true,
+    AlertDialog(
       onDismissRequest = { showLanguageDialog = false },
-      title = "Choose Language"
-    ) {
-      Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        languages.forEach { lang ->
-          Surface(
-            shape = RoundedCornerShape(8.dp),
-            color = if (selectedLanguage == lang) HomezyPrimaryContainer else HomezyCard,
-            modifier = Modifier
-              .fillMaxWidth()
-              .clip(RoundedCornerShape(8.dp))
-          ) {
+      title = { Text("Select Language", fontWeight = FontWeight.Bold, color = HomezyText) },
+      text = {
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+          languages.forEach { lang ->
             Row(
               modifier = Modifier
                 .fillMaxWidth()
-                .padding(12.dp),
-              horizontalArrangement = Arrangement.SpaceBetween,
+                .clickable {
+                  selectedLanguage = lang
+                  showLanguageDialog = false
+                }
+                .padding(vertical = 8.dp),
               verticalAlignment = Alignment.CenterVertically
             ) {
-              Text(
-                text = lang,
-                fontSize = 14.sp,
-                fontWeight = if (selectedLanguage == lang) FontWeight.Bold else FontWeight.Normal,
-                color = if (selectedLanguage == lang) HomezyPrimary else HomezyText
-              )
               RadioButton(
                 selected = selectedLanguage == lang,
                 onClick = {
@@ -255,10 +200,48 @@ fun CustomerProfileScreen(
                 },
                 colors = RadioButtonDefaults.colors(selectedColor = HomezyPrimary)
               )
+              Spacer(modifier = Modifier.width(8.dp))
+              Text(lang, fontSize = 14.sp, color = HomezyText)
             }
           }
         }
+      },
+      confirmButton = {
+        TextButton(onClick = { showLanguageDialog = false }) {
+          Text("Cancel", color = HomezyTextSecondary)
+        }
       }
+    )
+  }
+}
+
+@Composable
+fun ProfileListRow(
+  title: String,
+  subtitle: String? = null,
+  icon: ImageVector,
+  onClick: () -> Unit
+) {
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clickable { onClick() }
+      .padding(vertical = 12.dp, horizontal = 4.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+      Icon(icon, contentDescription = null, tint = HomezyPrimary, modifier = Modifier.size(20.dp))
+      Spacer(modifier = Modifier.width(12.dp))
+      Text(title, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = HomezyText)
+    }
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      if (subtitle != null) {
+        Text(subtitle, fontSize = 12.sp, color = HomezyTextSecondary)
+        Spacer(modifier = Modifier.width(6.dp))
+      }
+      Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = HomezyTextSecondary, modifier = Modifier.size(14.dp))
     }
   }
 }

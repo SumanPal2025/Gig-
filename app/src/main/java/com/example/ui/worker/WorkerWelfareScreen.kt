@@ -1,10 +1,10 @@
 package com.example.ui.worker
 
+import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -19,19 +19,15 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.example.ui.components.*
+import com.example.ui.components.HomezyCard
 import com.example.ui.theme.*
 
 @Composable
 fun WorkerWelfareScreen(
   modifier: Modifier = Modifier
 ) {
-  var showSosDialog by remember { mutableStateOf(false) }
-  var showTrainingDialog by remember { mutableStateOf(false) }
-  var showInsuranceDetailsDialog by remember { mutableStateOf(false) }
-  var showCertificateDialog by remember { mutableStateOf(false) }
-
-  var isEnrolledInTraining by remember { mutableStateOf(true) }
+  var expandedCard by remember { mutableStateOf<String?>(null) }
+  var showSkillPassport by remember { mutableStateOf(false) }
 
   LazyColumn(
     modifier = modifier
@@ -39,477 +35,257 @@ fun WorkerWelfareScreen(
       .background(HomezyBackground)
       .testTag("worker_welfare_screen"),
     contentPadding = PaddingValues(16.dp),
-    verticalArrangement = Arrangement.spacedBy(14.dp)
+    verticalArrangement = Arrangement.spacedBy(12.dp)
   ) {
     // Header
     item {
-      Column {
-        Text(
-          text = "Worker Welfare",
-          fontSize = 22.sp,
-          fontWeight = FontWeight.Bold,
-          color = HomezyText
-        )
-        Text(
-          text = "Cooperative safety net, health insurance, certifications & emergency support",
-          fontSize = 13.sp,
-          color = HomezyTextSecondary
-        )
-      }
+      Text(
+        text = "Welfare & Safety",
+        fontSize = 22.sp,
+        fontWeight = FontWeight.Bold,
+        color = HomezyText
+      )
+      Spacer(modifier = Modifier.height(2.dp))
+      Text(
+        text = "Cooperative coverage & verified credentials",
+        fontSize = 13.sp,
+        color = HomezyTextSecondary
+      )
     }
 
-    // Co-op Reserve & Solidarity Status Pill Banner
+    // 1. Insurance Status Card (Tap for details)
     item {
+      val isExpanded = expandedCard == "insurance"
       HomezyCard(
-        modifier = Modifier.fillMaxWidth(),
-        backgroundColor = HomezyPrimary,
-        elevation = 3.dp
+        onClick = { expandedCard = if (isExpanded) null else "insurance" },
+        modifier = Modifier.fillMaxWidth().testTag("welfare_insurance_card")
       ) {
         Row(
           modifier = Modifier.fillMaxWidth(),
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically
         ) {
-          Column {
-            Text(
-              text = "Co-op Welfare Reserve Fund",
-              color = Color.White.copy(alpha = 0.85f),
-              fontSize = 12.sp
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-              text = "₹12,48,500 Pooled",
-              color = Color.White,
-              fontSize = 20.sp,
-              fontWeight = FontWeight.ExtraBold
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-              text = "Your 3% contribution guarantees 100% safety & coverage",
-              color = Color.White.copy(alpha = 0.8f),
-              fontSize = 11.sp
-            )
-          }
-
-          Box(
-            modifier = Modifier
-              .size(44.dp)
-              .clip(CircleShape)
-              .background(Color.White.copy(alpha = 0.2f)),
-            contentAlignment = Alignment.Center
-          ) {
-            Icon(
-              imageVector = Icons.Default.HealthAndSafety,
-              contentDescription = null,
-              tint = Color.White,
-              modifier = Modifier.size(26.dp)
-            )
-          }
-        }
-      }
-    }
-
-    // 4 MAIN CARDS REQUIRED BY SPEC:
-    // 1. Insurance (Insurance: Active ✓)
-    // 2. Skill Certification (Skill Certification: Electrician — Level 3)
-    // 3. Training (Training: "Advanced AC Repair")
-    // 4. Emergency Support
-
-    // CARD 1: INSURANCE
-    item {
-      WelfareFeatureCard(
-        title = "Insurance",
-        statusText = "Active ✓",
-        statusColor = Color(0xFF15803D),
-        statusBgColor = Color(0xFFDCFCE7),
-        icon = Icons.Default.MedicalServices,
-        iconTint = HomezyPrimary,
-        primaryInfo = "Rashtriya Co-op Cashless Cover (₹5,00,000 / yr)",
-        secondaryInfo = "Covers hospitalization for Rahul + 4 family members across 850+ network hospitals. Plus ₹10L on-duty accidental protection.",
-        actionButtonText = "View Policy & E-Card",
-        onActionClick = { showInsuranceDetailsDialog = true }
-      )
-    }
-
-    // CARD 2: CERTIFICATION
-    item {
-      WelfareFeatureCard(
-        title = "Skill Certification",
-        statusText = "Electrician — Level 3",
-        statusColor = Color(0xFF1D4ED8),
-        statusBgColor = Color(0xFFEFF6FF),
-        icon = Icons.Default.Verified,
-        iconTint = Color(0xFF2563EB),
-        primaryInfo = "NSDC & Govt. ITI Master Technician",
-        secondaryInfo = "Verified Level 3 Certification in HVAC Systems, Domestic Electrical Wiring, and High-Voltage Safety Standards.",
-        actionButtonText = "Download Skill Certificate",
-        onActionClick = { showCertificateDialog = true }
-      )
-    }
-
-    // CARD 3: TRAINING
-    item {
-      WelfareFeatureCard(
-        title = "Training",
-        statusText = if (isEnrolledInTraining) "Enrolled • Batch Starts Mon" else "Available",
-        statusColor = Color(0xFFB45309),
-        statusBgColor = Color(0xFFFEF3C7),
-        icon = Icons.Default.School,
-        iconTint = Color(0xFFD97706),
-        primaryInfo = "Advanced AC Repair",
-        secondaryInfo = "Comprehensive module on inverter PCB troubleshooting, smart diagnostics, and high-efficiency heat pump servicing. 100% Co-op funded.",
-        actionButtonText = if (isEnrolledInTraining) "View Schedule & Materials" else "Enroll for Free",
-        onActionClick = { showTrainingDialog = true }
-      )
-    }
-
-    // CARD 4: EMERGENCY SUPPORT
-    item {
-      HomezyCard(
-        modifier = Modifier
-          .fillMaxWidth()
-          .testTag("welfare_card_emergency"),
-        elevation = 3.dp,
-        borderColor = Color(0xFFFCA5A5),
-        backgroundColor = Color(0xFFFFF1F2)
-      ) {
-        Column {
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Box(
-                modifier = Modifier
-                  .size(38.dp)
-                  .clip(RoundedCornerShape(8.dp))
-                  .background(Color(0xFFFEE2E2)),
-                contentAlignment = Alignment.Center
-              ) {
-                Icon(
-                  imageVector = Icons.Default.Emergency,
-                  contentDescription = null,
-                  tint = Color(0xFFDC2626),
-                  modifier = Modifier.size(22.dp)
-                )
-              }
-              Spacer(modifier = Modifier.width(10.dp))
-              Column {
-                Text(
-                  text = "Emergency Support",
-                  fontWeight = FontWeight.Bold,
-                  fontSize = 16.sp,
-                  color = Color(0xFF991B1B)
-                )
-                Text(
-                  text = "24/7 Co-op Distress & Safety Net",
-                  fontSize = 11.sp,
-                  color = Color(0xFFB91C1C)
-                )
-              }
-            }
-
-            Surface(
-              shape = RoundedCornerShape(8.dp),
-              color = Color(0xFFFEE2E2)
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+              modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(HomezyPrimaryContainer),
+              contentAlignment = Alignment.Center
             ) {
-              Text(
-                text = "Instant 24/7",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFDC2626),
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-              )
+              Icon(Icons.Default.HealthAndSafety, contentDescription = null, tint = HomezyPrimary, modifier = Modifier.size(20.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+              Text("Insurance", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = HomezyText)
+              Text("Tap for policy details", fontSize = 11.sp, color = HomezyTextSecondary)
             }
           }
 
-          Spacer(modifier = Modifier.height(10.dp))
-
-          Text(
-            text = "Accident on duty, vehicle breakdown, customer conflict, or technical hazard? The Co-op rapid response team will immediately dispatch assistance and provide legal protection.",
-            fontSize = 12.sp,
-            color = Color(0xFF7F1D1D),
-            lineHeight = 16.sp
-          )
-
-          Spacer(modifier = Modifier.height(12.dp))
-
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
+          Surface(
+            shape = RoundedCornerShape(6.dp),
+            color = Color(0xFFDCFCE7)
           ) {
-            HomezyButton(
-              text = "Call Co-op Helpline",
-              onClick = { showSosDialog = true },
-              variant = ButtonVariant.OUTLINE,
-              icon = Icons.Default.Phone,
-              modifier = Modifier.weight(1f)
+            Text(
+              text = "Active ✓",
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold,
+              color = Color(0xFF15803D),
+              modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
             )
+          }
+        }
 
-            HomezyButton(
-              text = "Trigger SOS Alert",
-              onClick = { showSosDialog = true },
-              variant = ButtonVariant.DANGER,
-              icon = Icons.Default.Warning,
-              modifier = Modifier.weight(1f),
-              testTag = "btn_trigger_sos"
-            )
+        AnimatedVisibility(visible = isExpanded) {
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(top = 10.dp)
+              .clip(RoundedCornerShape(8.dp))
+              .background(HomezySurfaceVariant)
+              .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+          ) {
+            Text("• Policy: National Co-op Health & Accident Shield", fontSize = 12.sp, color = HomezyText)
+            Text("• Sum Insured: ₹5,00,000 Medical + ₹10,00,000 Accidental", fontSize = 12.sp, color = HomezyText)
+            Text("• Premium: 100% funded by Cooperative Solidarity Pool", fontSize = 12.sp, color = HomezySecondary)
+            Text("• Renewal: Active till 31 Dec 2027", fontSize = 12.sp, color = HomezyText)
           }
         }
       }
     }
 
-    // Additional Benefits Accordion / Summary
+    // 2. Certification Status Card (Tap for details)
     item {
-      Text(
-        text = "More Co-op Welfare Entitlements",
-        fontSize = 15.sp,
-        fontWeight = FontWeight.Bold,
-        color = HomezyText
-      )
-    }
+      val isExpanded = expandedCard == "certification"
+      HomezyCard(
+        onClick = { expandedCard = if (isExpanded) null else "certification" },
+        modifier = Modifier.fillMaxWidth().testTag("welfare_certification_card")
+      ) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+              modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(HomezyPrimaryContainer),
+              contentAlignment = Alignment.Center
+            ) {
+              Icon(Icons.Default.Verified, contentDescription = null, tint = HomezyPrimary, modifier = Modifier.size(20.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+              Text("Certification", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = HomezyText)
+              Text("ITI & Skill Council accredited", fontSize = 11.sp, color = HomezyTextSecondary)
+            }
+          }
 
-    item {
-      HomezyCard(modifier = Modifier.fillMaxWidth()) {
-        BenefitRow(
-          title = "Interest-Free Tool & Gear Loan",
-          desc = "Eligible for up to ₹25,000 for advanced power tools at 0% interest.",
-          badge = "Eligible ✓"
-        )
-        HorizontalDivider(color = HomezyBorder, modifier = Modifier.padding(vertical = 10.dp))
-        BenefitRow(
-          title = "Children Education Subsidy",
-          desc = "₹15,000 yearly scholarship per child for Co-op workers with >1 yr tenure.",
-          badge = "Active"
-        )
-        HorizontalDivider(color = HomezyBorder, modifier = Modifier.padding(vertical = 10.dp))
-        BenefitRow(
-          title = "Retirement & Gratuity Fund",
-          desc = "Matching 2% monthly contribution deposited into National Pension System (NPS).",
-          badge = "Accumulating"
-        )
+          Surface(
+            shape = RoundedCornerShape(6.dp),
+            color = Color(0xFFDCFCE7)
+          ) {
+            Text(
+              text = "Verified ✓",
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold,
+              color = Color(0xFF15803D),
+              modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+          }
+        }
+
+        AnimatedVisibility(visible = isExpanded) {
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(top = 10.dp)
+              .clip(RoundedCornerShape(8.dp))
+              .background(HomezySurfaceVariant)
+              .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+          ) {
+            Text("• Certificate: ITI Electrician & Wireman Grade A", fontSize = 12.sp, color = HomezyText)
+            Text("• Issuing Body: National Council for Vocational Training", fontSize = 12.sp, color = HomezyText)
+            Text("• Verification: Verified by Bengaluru Federation Admin", fontSize = 12.sp, color = HomezySecondary)
+          }
+        }
       }
     }
-  }
 
-  // DIALOGS
-  if (showSosDialog) {
-    AlertDialog(
-      onDismissRequest = { showSosDialog = false },
-      title = {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Icon(Icons.Default.Warning, contentDescription = null, tint = Color(0xFFDC2626))
-          Spacer(modifier = Modifier.width(8.dp))
-          Text("24/7 Co-op Emergency SOS")
+    // 3. Training Status Card (Tap for details)
+    item {
+      val isExpanded = expandedCard == "training"
+      HomezyCard(
+        onClick = { expandedCard = if (isExpanded) null else "training" },
+        modifier = Modifier.fillMaxWidth().testTag("welfare_training_card")
+      ) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Box(
+              modifier = Modifier
+                .size(40.dp)
+                .clip(CircleShape)
+                .background(HomezyAccentContainer),
+              contentAlignment = Alignment.Center
+            ) {
+              Icon(Icons.Default.School, contentDescription = null, tint = Color(0xFFD97706), modifier = Modifier.size(20.dp))
+            }
+            Spacer(modifier = Modifier.width(12.dp))
+            Column {
+              Text("Training", fontSize = 15.sp, fontWeight = FontWeight.Bold, color = HomezyText)
+              Text("Co-op sponsored skill upgrade", fontSize = 11.sp, color = HomezyTextSecondary)
+            }
+          }
+
+          Surface(
+            shape = RoundedCornerShape(6.dp),
+            color = HomezyAccentContainer
+          ) {
+            Text(
+              text = "1 recommendation",
+              fontSize = 12.sp,
+              fontWeight = FontWeight.Bold,
+              color = Color(0xFF92400E),
+              modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+            )
+          }
         }
-      },
-      text = {
-        Column {
+
+        AnimatedVisibility(visible = isExpanded) {
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(top = 10.dp)
+              .clip(RoundedCornerShape(8.dp))
+              .background(HomezySurfaceVariant)
+              .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+          ) {
+            Text("• Recommended Module: Inverter & Solar Hybrid Systems", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = HomezyText)
+            Text("• Schedule: Weekend batch at Indiranagar Co-op Training Hub", fontSize = 12.sp, color = HomezyText)
+            Text("• Cost: 100% covered by Federation Upskilling Fund", fontSize = 12.sp, color = HomezySecondary)
+          }
+        }
+      }
+    }
+
+    // 4. DIGITAL SKILL PASSPORT: Behind "View Skill Passport"
+    item {
+      Spacer(modifier = Modifier.height(6.dp))
+      HomezyCard(modifier = Modifier.fillMaxWidth().testTag("skill_passport_container")) {
+        Row(
+          modifier = Modifier
+            .fillMaxWidth()
+            .clickable { showSkillPassport = !showSkillPassport }
+            .padding(vertical = 4.dp),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Icon(Icons.Default.Badge, contentDescription = null, tint = HomezyPrimary, modifier = Modifier.size(20.dp))
+            Spacer(modifier = Modifier.width(8.dp))
+            Text(
+              text = "Digital Skill Passport",
+              fontSize = 14.sp,
+              fontWeight = FontWeight.Bold,
+              color = HomezyPrimary
+            )
+          }
           Text(
-            text = "Your GPS location will be broadcasted to the Bengaluru Co-op Emergency Dispatch and your emergency contact (Sunita Sharma).",
-            fontSize = 13.sp,
-            color = HomezyText
-          )
-          Spacer(modifier = Modifier.height(10.dp))
-          Text(
-            text = "Toll-Free Dispatch: 1800-419-COOP\nField Coordinator: +91 98450 00112",
+            text = if (showSkillPassport) "▲ Hide" else "View Skill Passport ▼",
             fontSize = 12.sp,
             fontWeight = FontWeight.SemiBold,
             color = HomezyPrimary
           )
         }
-      },
-      confirmButton = {
-        HomezyButton(
-          text = "Confirm SOS Broadcast",
-          onClick = { showSosDialog = false },
-          variant = ButtonVariant.DANGER
-        )
-      },
-      dismissButton = {
-        HomezyButton(
-          text = "Cancel",
-          onClick = { showSosDialog = false },
-          variant = ButtonVariant.TEXT
-        )
-      }
-    )
-  }
 
-  if (showTrainingDialog) {
-    AlertDialog(
-      onDismissRequest = { showTrainingDialog = false },
-      title = { Text("Training: Advanced AC Repair") },
-      text = {
-        Column {
-          Text("Module: Inverter Split AC & PCB Diagnostics (40 Hours)", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-          Spacer(modifier = Modifier.height(6.dp))
-          Text("• Schedule: Mon & Wed (6:30 PM - 8:30 PM)\n• Location: Co-op Skill Academy, Indiranagar\n• Certification: Govt. Skill India Gold Badge\n• Cost: ₹0 (100% Co-op Sponsored)", fontSize = 12.sp, color = HomezyText)
+        AnimatedVisibility(visible = showSkillPassport) {
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(top = 12.dp)
+              .clip(RoundedCornerShape(8.dp))
+              .background(HomezySurfaceVariant)
+              .padding(12.dp),
+            verticalArrangement = Arrangement.spacedBy(6.dp)
+          ) {
+            Text("• Worker: Rahul Sharma (Member #0429)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = HomezyText)
+            Text("• Verification: State Federation Certified ✓", fontSize = 12.sp, color = HomezySecondary)
+            Text("• Skills: AC Deep Clean, High-Voltage Wiring, Inverter Diagnostics", fontSize = 12.sp, color = HomezyText)
+            Text("• Certifications: ITI Wireman, Skill India NSQF Level 4", fontSize = 12.sp, color = HomezyText)
+            Text("• Experience: 8 years verified trade experience", fontSize = 12.sp, color = HomezyText)
+            Text("• Rating: ★ 4.92 (642 completed cooperative jobs)", fontSize = 12.sp, color = HomezyText)
+          }
         }
-      },
-      confirmButton = {
-        HomezyButton(
-          text = "Done",
-          onClick = { showTrainingDialog = false }
-        )
-      }
-    )
-  }
-
-  if (showInsuranceDetailsDialog) {
-    AlertDialog(
-      onDismissRequest = { showInsuranceDetailsDialog = false },
-      title = { Text("Co-op Health & Accident Policy") },
-      text = {
-        Column {
-          Text("Policy #: HMZ-HLTH-2026-0429", fontWeight = FontWeight.Bold, fontSize = 13.sp)
-          Spacer(modifier = Modifier.height(6.dp))
-          Text("• Primary Insured: Rahul Sharma\n• Dependents: 4 Enrolled (Wife, 2 Children, Mother)\n• Sum Insured: ₹5,00,000 Cashless\n• Accident Shield: ₹10,00,000\n• TPA Partner: MediAssist Healthcare", fontSize = 12.sp, color = HomezyText)
-        }
-      },
-      confirmButton = {
-        HomezyButton(
-          text = "Download E-Card PDF",
-          onClick = { showInsuranceDetailsDialog = false }
-        )
-      }
-    )
-  }
-
-  if (showCertificateDialog) {
-    AlertDialog(
-      onDismissRequest = { showCertificateDialog = false },
-      title = { Text("Electrician — Level 3 Certificate") },
-      text = {
-        Column {
-          Text("Govt. ITI & NSDC Verified", fontWeight = FontWeight.Bold, fontSize = 13.sp, color = Color(0xFF1D4ED8))
-          Spacer(modifier = Modifier.height(6.dp))
-          Text("Credential ID: NSDC-ELEC-KA-883912\nIssuing Authority: Directorate General of Training (DGT)\nValidity: Lifetime Verified\nSkills: High-voltage wiring, HVAC diagnosis, load balancing", fontSize = 12.sp, color = HomezyText)
-        }
-      },
-      confirmButton = {
-        HomezyButton(
-          text = "Close",
-          onClick = { showCertificateDialog = false }
-        )
-      }
-    )
-  }
-}
-
-@Composable
-private fun WelfareFeatureCard(
-  title: String,
-  statusText: String,
-  statusColor: Color,
-  statusBgColor: Color,
-  icon: androidx.compose.ui.graphics.vector.ImageVector,
-  iconTint: Color,
-  primaryInfo: String,
-  secondaryInfo: String,
-  actionButtonText: String,
-  onActionClick: () -> Unit
-) {
-  HomezyCard(
-    modifier = Modifier.fillMaxWidth(),
-    elevation = 2.dp
-  ) {
-    Row(
-      modifier = Modifier.fillMaxWidth(),
-      horizontalArrangement = Arrangement.SpaceBetween,
-      verticalAlignment = Alignment.CenterVertically
-    ) {
-      Row(
-        modifier = Modifier.weight(1f),
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Box(
-          modifier = Modifier
-            .size(38.dp)
-            .clip(RoundedCornerShape(8.dp))
-            .background(iconTint.copy(alpha = 0.12f)),
-          contentAlignment = Alignment.Center
-        ) {
-          Icon(
-            imageVector = icon,
-            contentDescription = null,
-            tint = iconTint,
-            modifier = Modifier.size(20.dp)
-          )
-        }
-        Spacer(modifier = Modifier.width(10.dp))
-        Column {
-          Text(
-            text = title,
-            fontWeight = FontWeight.Bold,
-            fontSize = 16.sp,
-            color = HomezyText
-          )
-          Text(
-            text = primaryInfo,
-            fontSize = 12.sp,
-            fontWeight = FontWeight.SemiBold,
-            color = HomezyPrimary,
-            maxLines = 1
-          )
-        }
-      }
-
-      Surface(
-        shape = RoundedCornerShape(8.dp),
-        color = statusBgColor
-      ) {
-        Text(
-          text = statusText,
-          fontSize = 11.sp,
-          fontWeight = FontWeight.Bold,
-          color = statusColor,
-          modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-        )
       }
     }
-
-    Spacer(modifier = Modifier.height(8.dp))
-
-    Text(
-      text = secondaryInfo,
-      fontSize = 12.sp,
-      color = HomezyTextSecondary,
-      lineHeight = 16.sp
-    )
-
-    Spacer(modifier = Modifier.height(10.dp))
-
-    HomezyButton(
-      text = actionButtonText,
-      onClick = onActionClick,
-      variant = ButtonVariant.OUTLINE,
-      modifier = Modifier.fillMaxWidth()
-    )
-  }
-}
-
-@Composable
-private fun BenefitRow(
-  title: String,
-  desc: String,
-  badge: String
-) {
-  Row(
-    modifier = Modifier.fillMaxWidth(),
-    horizontalArrangement = Arrangement.SpaceBetween,
-    verticalAlignment = Alignment.CenterVertically
-  ) {
-    Column(modifier = Modifier.weight(1f)) {
-      Text(text = title, fontWeight = FontWeight.Bold, fontSize = 13.sp, color = HomezyText)
-      Text(text = desc, fontSize = 11.sp, color = HomezyTextSecondary, lineHeight = 15.sp)
-    }
-    Spacer(modifier = Modifier.width(10.dp))
-    HomezyBadge(
-      text = badge,
-      containerColor = HomezyPrimaryContainer,
-      contentColor = HomezyPrimary
-    )
   }
 }

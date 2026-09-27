@@ -373,6 +373,9 @@ fun CustomerBookingFlowScreen(
         BookingFlowStep.PAYMENT -> {
           PaymentPrototypeStep(
             totalAmount = totalPrice,
+            workerEarnings = workerEarnings,
+            cooperativeContribution = cooperativeContribution,
+            platformFee = platformFee,
             selectedMethod = selectedPaymentMethod,
             onSelectMethod = { selectedPaymentMethod = it },
             upiProvider = upiProvider,
@@ -1781,139 +1784,53 @@ private fun BookingConfirmationStep(
   totalPrice: Int,
   onProceedToPayment: () -> Unit
 ) {
+  var showPriceDetails by remember { mutableStateOf(false) }
+
   LazyColumn(
     contentPadding = PaddingValues(16.dp),
-    verticalArrangement = Arrangement.spacedBy(16.dp),
+    verticalArrangement = Arrangement.spacedBy(14.dp),
     modifier = Modifier.fillMaxSize()
   ) {
     item {
       Text(
-        text = "Booking Confirmation & Breakdown",
+        text = "Booking Confirmation",
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,
         color = HomezyText
       )
+      Spacer(modifier = Modifier.height(2.dp))
       Text(
-        text = "Review your booking details and transparent cost structure.",
+        text = "Review your booking details before proceeding.",
         fontSize = 13.sp,
         color = HomezyTextSecondary
       )
     }
 
-    // Clear Booking Summary Card
+    // Clear Booking Summary Card: Service, Worker, Date, Time, Final Price
     item {
-      HomezyCard(modifier = Modifier.fillMaxWidth()) {
-        Text(
-          text = "Booking Summary",
-          fontSize = 15.sp,
-          fontWeight = FontWeight.Bold,
-          color = HomezyText
-        )
+      HomezyCard(modifier = Modifier.fillMaxWidth().testTag("booking_confirmation_card")) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+          Text("Service", fontSize = 13.sp, color = HomezyTextSecondary)
+          Text(service.name, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = HomezyText)
+        }
         Spacer(modifier = Modifier.height(10.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-          Text("Service", fontSize = 13.sp, color = HomezyTextSecondary)
-          Text(service.name, fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = HomezyText)
-        }
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-          Text("Assigned Worker", fontSize = 13.sp, color = HomezyTextSecondary)
+          Text("Worker", fontSize = 13.sp, color = HomezyTextSecondary)
           Text("${worker.name} (★ ${worker.rating})", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = HomezyPrimary)
         }
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-          Text("Appointment", fontSize = 13.sp, color = HomezyTextSecondary)
-          Text("$date • $timeSlot", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = HomezyText)
+          Text("Date", fontSize = 13.sp, color = HomezyTextSecondary)
+          Text(date, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = HomezyText)
         }
-        Spacer(modifier = Modifier.height(6.dp))
+        Spacer(modifier = Modifier.height(10.dp))
 
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-          Text("Address", fontSize = 13.sp, color = HomezyTextSecondary)
-          Text(address, fontSize = 12.sp, color = HomezyText, modifier = Modifier.widthIn(max = 200.dp))
+          Text("Time", fontSize = 13.sp, color = HomezyTextSecondary)
+          Text(timeSlot, fontSize = 13.sp, fontWeight = FontWeight.Medium, color = HomezyText)
         }
-        Spacer(modifier = Modifier.height(6.dp))
-
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-          Text("Problem", fontSize = 13.sp, color = HomezyTextSecondary)
-          Text(problemDescription, fontSize = 12.sp, color = HomezyText, modifier = Modifier.widthIn(max = 200.dp))
-        }
-      }
-    }
-
-    // TRANSPARENT PRICE BREAKDOWN CARD
-    // Requirement:
-    // Display:
-    // Service Price
-    // Worker Earnings
-    // Cooperative Contribution
-    // Platform/Service Fee
-    // Total
-    // Do not claim fixed real-world percentages.
-    item {
-      HomezyCard(
-        modifier = Modifier.fillMaxWidth(),
-        backgroundColor = HomezySurfaceVariant
-      ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(
-            text = "Transparent Price Breakdown",
-            fontSize = 15.sp,
-            fontWeight = FontWeight.Bold,
-            color = HomezyText
-          )
-          HomezyBadge(
-            text = "No Hidden Surcharges",
-            containerColor = HomezyPrimaryContainer,
-            contentColor = HomezyPrimary
-          )
-        }
-
-        Spacer(modifier = Modifier.height(14.dp))
-
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text("Service Price", fontSize = 13.sp, color = HomezyTextSecondary)
-          Text("₹$servicePrice", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = HomezyText)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text("Worker Earnings", fontSize = 13.sp, color = HomezyTextSecondary)
-          Text("₹$workerEarnings", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFF16A34A))
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text("Cooperative Contribution", fontSize = 13.sp, color = HomezyTextSecondary)
-          Text("₹$cooperativeContribution", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = HomezyText)
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-          Text("Platform/Service Fee", fontSize = 13.sp, color = HomezyTextSecondary)
-          Text("₹$platformFee", fontSize = 13.sp, fontWeight = FontWeight.Medium, color = HomezyText)
-        }
-
         Spacer(modifier = Modifier.height(12.dp))
         Divider(color = HomezyBorder)
         Spacer(modifier = Modifier.height(12.dp))
@@ -1923,21 +1840,76 @@ private fun BookingConfirmationStep(
           horizontalArrangement = Arrangement.SpaceBetween,
           verticalAlignment = Alignment.CenterVertically
         ) {
-          Text("Total", fontSize = 17.sp, fontWeight = FontWeight.Bold, color = HomezyText)
+          Text("Final Price", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = HomezyText)
           Text("₹$totalPrice", fontSize = 20.sp, fontWeight = FontWeight.Bold, color = HomezyPrimary)
+        }
+
+        Spacer(modifier = Modifier.height(10.dp))
+
+        // "View price details" expandable toggle
+        Row(
+          modifier = Modifier
+            .clickable { showPriceDetails = !showPriceDetails }
+            .padding(vertical = 4.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = if (showPriceDetails) "Hide price details ▲" else "View price details ▼",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = HomezyPrimary
+          )
+        }
+
+        AnimatedVisibility(visible = showPriceDetails) {
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(top = 8.dp)
+              .clip(RoundedCornerShape(8.dp))
+              .background(HomezySurfaceVariant)
+              .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+          ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("Service Price", fontSize = 12.sp, color = HomezyTextSecondary)
+              Text("₹$servicePrice", fontSize = 12.sp, color = HomezyText)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("Worker Earnings", fontSize = 12.sp, color = HomezyTextSecondary)
+              Text("₹$workerEarnings", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = HomezySecondary)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("Cooperative Contribution", fontSize = 12.sp, color = HomezyTextSecondary)
+              Text("₹$cooperativeContribution", fontSize = 12.sp, color = HomezyText)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("Platform Fee", fontSize = 12.sp, color = HomezyTextSecondary)
+              Text("₹$platformFee", fontSize = 12.sp, color = HomezyText)
+            }
+          }
         }
       }
     }
 
     item {
       Spacer(modifier = Modifier.height(10.dp))
-      HomezyButton(
-        text = "Proceed to Payment (₹$totalPrice)",
+      Button(
         onClick = onProceedToPayment,
-        variant = ButtonVariant.PRIMARY,
-        fullWidth = true,
-        testTag = "booking_proceed_payment_btn"
-      )
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(containerColor = HomezyPrimary),
+        modifier = Modifier
+          .fillMaxWidth()
+          .height(48.dp)
+          .testTag("booking_proceed_payment_btn")
+      ) {
+        Text(
+          text = "Confirm Booking",
+          fontSize = 15.sp,
+          fontWeight = FontWeight.Bold,
+          color = Color.White
+        )
+      }
     }
   }
 }
@@ -1945,6 +1917,9 @@ private fun BookingConfirmationStep(
 @Composable
 private fun PaymentPrototypeStep(
   totalAmount: Int,
+  workerEarnings: Int,
+  cooperativeContribution: Int,
+  platformFee: Int,
   selectedMethod: String,
   onSelectMethod: (String) -> Unit,
   upiProvider: String,
@@ -1960,30 +1935,99 @@ private fun PaymentPrototypeStep(
   isProcessing: Boolean,
   onPay: () -> Unit
 ) {
+  var showPaymentBreakdown by remember { mutableStateOf(false) }
+
   LazyColumn(
     contentPadding = PaddingValues(16.dp),
-    verticalArrangement = Arrangement.spacedBy(16.dp),
+    verticalArrangement = Arrangement.spacedBy(14.dp),
     modifier = Modifier.fillMaxSize()
   ) {
     item {
       Text(
-        text = "Prototype Payment",
+        text = "Payment",
         fontSize = 20.sp,
         fontWeight = FontWeight.Bold,
         color = HomezyText
       )
+      Spacer(modifier = Modifier.height(2.dp))
       Text(
-        text = "Select payment method (Simulated prototype experience).",
+        text = "Select payment method to complete booking.",
         fontSize = 13.sp,
         color = HomezyTextSecondary
       )
+    }
+
+    // Payment Total & Expandable Breakdown
+    item {
+      HomezyCard(modifier = Modifier.fillMaxWidth()) {
+        Row(
+          modifier = Modifier.fillMaxWidth(),
+          horizontalArrangement = Arrangement.SpaceBetween,
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = "Total:",
+            fontSize = 16.sp,
+            fontWeight = FontWeight.Bold,
+            color = HomezyText
+          )
+          Text(
+            text = "₹$totalAmount",
+            fontSize = 22.sp,
+            fontWeight = FontWeight.Bold,
+            color = HomezyPrimary
+          )
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // "View payment breakdown" expandable toggle
+        Row(
+          modifier = Modifier
+            .clickable { showPaymentBreakdown = !showPaymentBreakdown }
+            .padding(vertical = 4.dp),
+          verticalAlignment = Alignment.CenterVertically
+        ) {
+          Text(
+            text = if (showPaymentBreakdown) "Hide payment breakdown ▲" else "View payment breakdown ▼",
+            fontSize = 12.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = HomezyPrimary
+          )
+        }
+
+        AnimatedVisibility(visible = showPaymentBreakdown) {
+          Column(
+            modifier = Modifier
+              .fillMaxWidth()
+              .padding(top = 8.dp)
+              .clip(RoundedCornerShape(8.dp))
+              .background(HomezySurfaceVariant)
+              .padding(10.dp),
+            verticalArrangement = Arrangement.spacedBy(4.dp)
+          ) {
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("Worker Earnings", fontSize = 12.sp, color = HomezyTextSecondary)
+              Text("₹$workerEarnings", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = HomezySecondary)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("Cooperative Contribution", fontSize = 12.sp, color = HomezyTextSecondary)
+              Text("₹$cooperativeContribution", fontSize = 12.sp, color = HomezyText)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+              Text("Platform/Service Fee", fontSize = 12.sp, color = HomezyTextSecondary)
+              Text("₹$platformFee", fontSize = 12.sp, color = HomezyText)
+            }
+          }
+        }
+      }
     }
 
     // Payment Method Selection: UPI, Card, Cash
     item {
       HomezyCard(modifier = Modifier.fillMaxWidth()) {
         Text("Payment Mode", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = HomezyText)
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(8.dp))
 
         listOf("UPI", "Card", "Cash").forEach { method ->
           val isSelected = selectedMethod == method
@@ -1995,136 +2039,37 @@ private fun PaymentPrototypeStep(
               if (isSelected) HomezyPrimary else HomezyBorder
             ),
             onClick = { onSelectMethod(method) },
-            modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp)
+            modifier = Modifier.fillMaxWidth().padding(vertical = 3.dp)
           ) {
             Row(
-              modifier = Modifier.padding(12.dp),
-              verticalAlignment = Alignment.CenterVertically,
-              horizontalArrangement = Arrangement.SpaceBetween
+              modifier = Modifier.padding(10.dp),
+              verticalAlignment = Alignment.CenterVertically
             ) {
-              Row(verticalAlignment = Alignment.CenterVertically) {
-                RadioButton(
-                  selected = isSelected,
-                  onClick = { onSelectMethod(method) },
-                  colors = RadioButtonDefaults.colors(selectedColor = HomezyPrimary)
-                )
-                Spacer(modifier = Modifier.width(8.dp))
-                Column {
-                  Text(
-                    text = when (method) {
-                      "UPI" -> "UPI (Instant PhonePe, GPay, Paytm)"
-                      "Card" -> "Credit / Debit Card (Visa, Mastercard, RuPay)"
-                      "Cash" -> "Cash on Delivery / Service Completion"
-                      else -> method
-                    },
-                    fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                    fontSize = 13.sp,
-                    color = if (isSelected) HomezyPrimary else HomezyText
-                  )
-                  Text(
-                    text = when (method) {
-                      "UPI" -> "Direct digital transfer with cooperative escrow"
-                      "Card" -> "Zero transaction surcharge"
-                      "Cash" -> "Pay worker directly after satisfaction verification"
-                      else -> ""
-                    },
-                    fontSize = 11.sp,
-                    color = HomezyTextSecondary
-                  )
-                }
-              }
+              RadioButton(
+                selected = isSelected,
+                onClick = { onSelectMethod(method) },
+                colors = RadioButtonDefaults.colors(selectedColor = HomezyPrimary)
+              )
+              Spacer(modifier = Modifier.width(8.dp))
+              Text(
+                text = when (method) {
+                  "UPI" -> "UPI (GPay / PhonePe / Paytm)"
+                  "Card" -> "Credit / Debit Card"
+                  "Cash" -> "Cash on Service Completion"
+                  else -> method
+                },
+                fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
+                fontSize = 13.sp,
+                color = if (isSelected) HomezyPrimary else HomezyText
+              )
             }
           }
         }
       }
     }
 
-    // Method Details
     item {
-      HomezyCard(modifier = Modifier.fillMaxWidth()) {
-        when (selectedMethod) {
-          "UPI" -> {
-            Text("UPI Payment Details", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(10.dp))
-            Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-              listOf("Google Pay", "PhonePe", "Paytm").forEach { prov ->
-                Surface(
-                  shape = RoundedCornerShape(8.dp),
-                  color = if (upiProvider == prov) HomezyPrimaryContainer else HomezySurfaceVariant,
-                  border = androidx.compose.foundation.BorderStroke(
-                    1.dp,
-                    if (upiProvider == prov) HomezyPrimary else HomezyBorder
-                  ),
-                  onClick = { onUpiProviderChange(prov) },
-                  modifier = Modifier.weight(1f)
-                ) {
-                  Text(
-                    text = prov,
-                    fontSize = 11.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = if (upiProvider == prov) HomezyPrimary else HomezyText,
-                    textAlign = TextAlign.Center,
-                    modifier = Modifier.padding(vertical = 8.dp)
-                  )
-                }
-              }
-            }
-            Spacer(modifier = Modifier.height(10.dp))
-            OutlinedTextField(
-              value = upiIdInput,
-              onValueChange = onUpiIdChange,
-              label = { Text("Virtual Payment Address (UPI ID)") },
-              modifier = Modifier.fillMaxWidth()
-            )
-          }
-
-          "Card" -> {
-            Text("Card Details", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(10.dp))
-            OutlinedTextField(
-              value = cardNumber,
-              onValueChange = onCardNumberChange,
-              label = { Text("Card Number") },
-              modifier = Modifier.fillMaxWidth()
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Row(
-              modifier = Modifier.fillMaxWidth(),
-              horizontalArrangement = Arrangement.spacedBy(10.dp)
-            ) {
-              OutlinedTextField(
-                value = cardExpiry,
-                onValueChange = onCardExpiryChange,
-                label = { Text("Expiry MM/YY") },
-                modifier = Modifier.weight(1f)
-              )
-              OutlinedTextField(
-                value = cardCvv,
-                onValueChange = onCardCvvChange,
-                label = { Text("CVV") },
-                modifier = Modifier.weight(1f)
-              )
-            }
-          }
-
-          "Cash" -> {
-            Text("Cash on Completion", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-              text = "You can hand over ₹$totalAmount in cash to the service partner only after inspecting and verifying the completed work.",
-              fontSize = 12.sp,
-              color = HomezyTextSecondary
-            )
-          }
-        }
-      }
-    }
-
-    item {
-      Spacer(modifier = Modifier.height(10.dp))
+      Spacer(modifier = Modifier.height(8.dp))
       if (isProcessing) {
         Box(
           modifier = Modifier.fillMaxWidth().padding(16.dp),
@@ -2134,20 +2079,29 @@ private fun PaymentPrototypeStep(
             CircularProgressIndicator(color = HomezyPrimary)
             Spacer(modifier = Modifier.height(10.dp))
             Text(
-              text = "Processing simulated payment authorization...",
+              text = "Processing payment authorization...",
               fontSize = 13.sp,
               color = HomezyTextSecondary
             )
           }
         }
       } else {
-        HomezyButton(
-          text = if (selectedMethod == "Cash") "Confirm Booking with Cash on Service (₹$totalAmount)" else "Simulate Payment of ₹$totalAmount",
+        Button(
           onClick = onPay,
-          variant = ButtonVariant.PRIMARY,
-          fullWidth = true,
-          testTag = "simulate_payment_btn"
-        )
+          shape = RoundedCornerShape(8.dp),
+          colors = ButtonDefaults.buttonColors(containerColor = HomezyPrimary),
+          modifier = Modifier
+            .fillMaxWidth()
+            .height(48.dp)
+            .testTag("simulate_payment_btn")
+        ) {
+          Text(
+            text = "Pay Now",
+            fontSize = 15.sp,
+            fontWeight = FontWeight.Bold,
+            color = Color.White
+          )
+        }
       }
     }
   }

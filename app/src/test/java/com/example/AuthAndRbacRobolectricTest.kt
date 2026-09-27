@@ -87,7 +87,7 @@ class AuthAndRbacRobolectricTest {
   }
 
   @Test
-  fun customer_cannot_access_admin_redirects_to_home() {
+  fun customer_top_bar_has_no_role_tabs_and_stays_on_home() {
     composeRule.setContent {
       HomezyTheme {
         HomezyApp(initialUser = DemoAccounts.CUSTOMER)
@@ -97,17 +97,17 @@ class AuthAndRbacRobolectricTest {
     // Ensure Customer Home is active
     composeRule.onNodeWithTag("customer_home_screen").assertIsDisplayed()
 
-    // Tap on the Admin role tab
-    composeRule.onNodeWithTag("role_tab_admin").performClick()
-    composeRule.waitForIdle()
+    // Verify role switcher options are removed from the top bar
+    composeRule.onNodeWithTag("role_tab_customer").assertDoesNotExist()
+    composeRule.onNodeWithTag("role_tab_worker").assertDoesNotExist()
+    composeRule.onNodeWithTag("role_tab_admin").assertDoesNotExist()
 
-    // Verify user is NOT permitted to admin and remains safely on Customer Home
-    composeRule.onNodeWithTag("customer_home_screen").assertIsDisplayed()
-    composeRule.onNodeWithTag("admin_dashboard_screen").assertDoesNotExist()
+    // Top bar logout button remains available
+    composeRule.onNodeWithTag("app_logout_btn").assertIsDisplayed()
   }
 
   @Test
-  fun worker_cannot_access_admin_redirects_to_dashboard() {
+  fun worker_top_bar_has_no_role_tabs_and_stays_on_dashboard() {
     composeRule.setContent {
       HomezyTheme {
         HomezyApp(initialUser = DemoAccounts.WORKER)
@@ -117,13 +117,13 @@ class AuthAndRbacRobolectricTest {
     // Ensure Worker Dashboard is active
     composeRule.onNodeWithTag("worker_dashboard_screen").assertIsDisplayed()
 
-    // Tap on Admin role tab
-    composeRule.onNodeWithTag("role_tab_admin").performClick()
-    composeRule.waitForIdle()
+    // Verify role switcher options are removed from the top bar
+    composeRule.onNodeWithTag("role_tab_customer").assertDoesNotExist()
+    composeRule.onNodeWithTag("role_tab_worker").assertDoesNotExist()
+    composeRule.onNodeWithTag("role_tab_admin").assertDoesNotExist()
 
-    // Verify worker remains safely on Worker Dashboard
-    composeRule.onNodeWithTag("worker_dashboard_screen").assertIsDisplayed()
-    composeRule.onNodeWithTag("admin_dashboard_screen").assertDoesNotExist()
+    // Top bar logout button remains available
+    composeRule.onNodeWithTag("app_logout_btn").assertIsDisplayed()
   }
 }
 

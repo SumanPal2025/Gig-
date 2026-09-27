@@ -1,27 +1,27 @@
 package com.example.ui.worker
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowForward
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.AuthUser
-import com.example.ui.components.*
+import com.example.ui.components.HomezyCard
 import com.example.ui.theme.*
 
 @Composable
@@ -32,58 +32,7 @@ fun WorkerProfileScreen(
   onSwitchToAdmin: () -> Unit = {},
   modifier: Modifier = Modifier
 ) {
-  var enrolledCourses by remember { mutableStateOf(setOf("Advanced AC Repair")) }
-  var showQrDialog by remember { mutableStateOf(false) }
-  var showEnrollSuccessDialog by remember { mutableStateOf<String?>(null) }
-
-  val passportSkills = listOf(
-    "AC Deep Jet Cleaning",
-    "Residential Wiring",
-    "Switchboard & MCB",
-    "Inverter Setup",
-    "Pipe Leakage & Fixtures",
-    "PCB Diagnostics"
-  )
-
-  val passportCertifications = listOf(
-    "Govt. ITI Diploma in Electrical (DGT)",
-    "Level 3 Master HVAC Specialist (NSDC)",
-    "High-Voltage Safety & Earthing Standard",
-    "Eco-Refrigerant R32 Certified (BEE)"
-  )
-
-  val recommendedSkills = listOf(
-    "EV Charging Station Installation" to "+₹350/job higher fare",
-    "Smart Home Automation (Zigbee/Matter)" to "Surging in Koramangala",
-    "Solar Rooftop Inverter Grid Sync" to "Govt. Subsidized module"
-  )
-
-  val recommendedTrainings = listOf(
-    TrainingItem(
-      id = "tr_1",
-      title = "EV Charging Station Setup",
-      duration = "24 Hours • 4 Practical Labs",
-      instructor = "National Skill Dev. Council (NSDC)",
-      subsidy = "100% Co-op Sponsored (Free)",
-      tag = "High Demand"
-    ),
-    TrainingItem(
-      id = "tr_2",
-      title = "Smart Home IoT & Automation",
-      duration = "16 Hours • Weekend Batch",
-      instructor = "Bengaluru Co-op Tech Guild",
-      subsidy = "100% Co-op Sponsored (Free)",
-      tag = "Premium Rate"
-    ),
-    TrainingItem(
-      id = "tr_3",
-      title = "Solar Rooftop Grid Integration",
-      duration = "32 Hours • Govt. Certification",
-      instructor = "Ministry of Skill Development",
-      subsidy = "100% Co-op Sponsored (Free)",
-      tag = "Govt. Certified"
-    )
-  )
+  var showInfoDialog by remember { mutableStateOf<Pair<String, String>?>(null) }
 
   LazyColumn(
     modifier = modifier
@@ -93,611 +42,190 @@ fun WorkerProfileScreen(
     contentPadding = PaddingValues(16.dp),
     verticalArrangement = Arrangement.spacedBy(14.dp)
   ) {
-    // Top Title
+    // Worker Profile Header
     item {
       Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier
+          .fillMaxWidth()
+          .padding(vertical = 8.dp),
         verticalAlignment = Alignment.CenterVertically
       ) {
-        Column {
+        Box(
+          modifier = Modifier
+            .size(54.dp)
+            .clip(CircleShape)
+            .background(HomezyPrimary),
+          contentAlignment = Alignment.Center
+        ) {
           Text(
-            text = "Digital Skill Passport",
-            fontSize = 22.sp,
+            text = currentUser.avatarInitials.ifEmpty { "RS" },
             fontWeight = FontWeight.Bold,
-            color = HomezyText
+            fontSize = 18.sp,
+            color = Color.White
           )
+        }
+        Spacer(modifier = Modifier.width(14.dp))
+        Column {
+          Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(
+              text = currentUser.name,
+              fontWeight = FontWeight.Bold,
+              fontSize = 18.sp,
+              color = HomezyText
+            )
+            Spacer(modifier = Modifier.width(6.dp))
+            Icon(Icons.Default.Verified, contentDescription = "Verified", tint = HomezySecondary, modifier = Modifier.size(16.dp))
+          }
           Text(
-            text = "Tamper-proof verifiable cooperative credential",
+            text = "Co-op Member #0429 • Electrician",
             fontSize = 13.sp,
             color = HomezyTextSecondary
           )
         }
+      }
+    }
 
-        IconButton(
-          onClick = { showQrDialog = true },
-          modifier = Modifier
-            .size(40.dp)
-            .clip(CircleShape)
-            .background(HomezyPrimaryContainer)
-        ) {
-          Icon(Icons.Default.QrCode, contentDescription = "Show QR Token", tint = HomezyPrimary, modifier = Modifier.size(22.dp))
+    // Grouped List Rows:
+    // Personal Information, Skills, Certifications, Cooperative, Welfare, Payments, Settings
+    item {
+      HomezyCard(modifier = Modifier.fillMaxWidth()) {
+        Column {
+          WorkerProfileRow(
+            title = "Personal Information",
+            subtitle = currentUser.phone,
+            icon = Icons.Default.PersonOutline,
+            onClick = {
+              showInfoDialog = "Personal Information" to "Name: ${currentUser.name}\nPhone: ${currentUser.phone}\nEmail: ${currentUser.email}\nService Cluster: Indiranagar, Sector 2"
+            }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
+
+          WorkerProfileRow(
+            title = "Skills",
+            subtitle = "6 Verified Skills",
+            icon = Icons.Default.Build,
+            onClick = {
+              showInfoDialog = "Verified Skills" to "• AC Deep Cleaning\n• Residential Wiring & Earthing\n• Inverter & Backup Systems\n• Switchboard Diagnostics\n• Motor Repair\n• Circuit Breaker Tripping"
+            }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
+
+          WorkerProfileRow(
+            title = "Certifications",
+            subtitle = "Govt. ITI & NSQF Level 4",
+            icon = Icons.Default.Verified,
+            onClick = {
+              showInfoDialog = "Certifications" to "• ITI Electrician Diploma (DGT, Govt. of India)\n• NSQF Level 4 Master Wireman (Skill India)\n• State Electrical Safety Board License #KA-9812"
+            }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
+
+          WorkerProfileRow(
+            title = "Cooperative",
+            subtitle = "COOP-KA-0429 (Bengaluru)",
+            icon = Icons.Default.Handshake,
+            onClick = {
+              showInfoDialog = "Cooperative Membership" to "• Society: Bengaluru Household Craftspersons Co-op Ltd.\n• Member Since: March 2023\n• Voting Status: Active Shareholder\n• Patronage Dividend: Active"
+            }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
+
+          WorkerProfileRow(
+            title = "Welfare",
+            subtitle = "Healthcare & Safety Pool Active",
+            icon = Icons.Default.HealthAndSafety,
+            onClick = {
+              showInfoDialog = "Welfare & Safety Net" to "• Group Medical Insurance: ₹5,00,000\n• Accidental Disability: ₹10,00,000\n• Emergency Solidarity Reserve: Enrolled"
+            }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
+
+          WorkerProfileRow(
+            title = "Payments",
+            subtitle = "SBI A/c ending 4819 (Daily Payout)",
+            icon = Icons.Default.AccountBalance,
+            onClick = {
+              showInfoDialog = "Payout Settlement" to "• Linked Bank: State Bank of India\n• A/c: •••• •••• 4819\n• IFSC: SBIN0004218\n• Payout Cycle: Automated daily settlement at 9:00 PM"
+            }
+          )
+          HorizontalDivider(color = HomezyBorder.copy(alpha = 0.6f))
+
+          WorkerProfileRow(
+            title = "Settings",
+            subtitle = "Preferences & Notifications",
+            icon = Icons.Default.Settings,
+            onClick = {
+              showInfoDialog = "Settings" to "• Dispatch Alerts: Sound & Vibration ON\n• Language: English / Kannada\n• App Version: HOMEZY v2.4 (Build 42)"
+            }
+          )
         }
       }
     }
 
-    // ==========================================
-    // HERO: ATTRACTIVE DIGITAL SKILL PASSPORT
-    // ==========================================
+    // Logout
     item {
-      Card(
+      Spacer(modifier = Modifier.height(6.dp))
+      Button(
+        onClick = onLogout,
+        shape = RoundedCornerShape(8.dp),
+        colors = ButtonDefaults.buttonColors(
+          containerColor = Color(0xFFFEE2E2),
+          contentColor = Color(0xFFDC2626)
+        ),
         modifier = Modifier
           .fillMaxWidth()
-          .testTag("digital_skill_passport_card"),
-        shape = RoundedCornerShape(16.dp),
-        colors = CardDefaults.cardColors(containerColor = Color(0xFF1E293B)),
-        elevation = CardDefaults.cardElevation(defaultElevation = 6.dp)
+          .height(48.dp)
+          .testTag("worker_logout_btn")
       ) {
-        Column(
-          modifier = Modifier
-            .fillMaxWidth()
-            .background(
-              Brush.verticalGradient(
-                colors = listOf(
-                  Color(0xFF0F172A),
-                  Color(0xFF1E293B),
-                  Color(0xFF0F766E).copy(alpha = 0.6f)
-                )
-              )
-            )
-            .padding(18.dp)
-        ) {
-          // Passport Header: Republic / Co-op Crest & Verification
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Row(verticalAlignment = Alignment.CenterVertically) {
-              Box(
-                modifier = Modifier
-                  .size(36.dp)
-                  .clip(CircleShape)
-                  .background(Color(0xFFF59E0B)),
-                contentAlignment = Alignment.Center
-              ) {
-                Icon(
-                  imageVector = Icons.Default.Shield,
-                  contentDescription = null,
-                  tint = Color(0xFF0F172A),
-                  modifier = Modifier.size(20.dp)
-                )
-              }
-              Spacer(modifier = Modifier.width(10.dp))
-              Column {
-                Text(
-                  text = "HOMEZY COOPERATIVE FEDERATION",
-                  fontSize = 10.sp,
-                  fontWeight = FontWeight.ExtraBold,
-                  letterSpacing = 1.sp,
-                  color = Color(0xFFF59E0B)
-                )
-                Text(
-                  text = "DIGITAL SKILL PASSPORT",
-                  fontSize = 13.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = Color.White
-                )
-              }
-            }
-
-            // Verification Status Badge
-            Surface(
-              shape = RoundedCornerShape(20.dp),
-              color = Color(0xFF065F46),
-              border = androidx.compose.foundation.BorderStroke(1.dp, Color(0xFF34D399))
-            ) {
-              Row(
-                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp),
-                verticalAlignment = Alignment.CenterVertically
-              ) {
-                Icon(
-                  imageVector = Icons.Default.Verified,
-                  contentDescription = null,
-                  tint = Color(0xFF34D399),
-                  modifier = Modifier.size(13.dp)
-                )
-                Spacer(modifier = Modifier.width(4.dp))
-                Text(
-                  text = "Verified ✓",
-                  fontSize = 11.sp,
-                  fontWeight = FontWeight.Bold,
-                  color = Color(0xFFD1FAE5)
-                )
-              }
-            }
-          }
-
-          Spacer(modifier = Modifier.height(16.dp))
-
-          // Worker Name & Avatar Row
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Box(
-              modifier = Modifier
-                .size(60.dp)
-                .clip(CircleShape)
-                .background(Color(0xFF0D9488))
-                .border(2.dp, Color(0xFFF59E0B), CircleShape),
-              contentAlignment = Alignment.Center
-            ) {
-              Text(
-                text = "RS",
-                fontSize = 22.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-              )
-            }
-
-            Spacer(modifier = Modifier.width(14.dp))
-
-            Column {
-              Text(
-                text = "Rahul Sharma",
-                fontSize = 20.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color.White
-              )
-              Text(
-                text = "Member ID: #HMZ-KA-0429",
-                fontSize = 12.sp,
-                color = Color.White.copy(alpha = 0.7f)
-              )
-              Text(
-                text = "Co-op: Bengaluru Trades Federation (Zone East)",
-                fontSize = 11.sp,
-                fontWeight = FontWeight.Medium,
-                color = Color(0xFFFCD34D)
-              )
-            }
-          }
-
-          Spacer(modifier = Modifier.height(16.dp))
-          HorizontalDivider(color = Color.White.copy(alpha = 0.15f))
-          Spacer(modifier = Modifier.height(14.dp))
-
-          // 3 Passport Metrics: Experience, Rating, Jobs Completed
-          Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween
-          ) {
-            PassportMetricItem("Experience", "8 Years", Icons.Default.Timeline)
-            PassportMetricItem("Rating", "4.92 ★", Icons.Default.Star)
-            PassportMetricItem("Jobs Done", "642 Jobs", Icons.Default.TaskAlt)
-          }
-
-          Spacer(modifier = Modifier.height(16.dp))
-
-          // Verified Skills Section
-          Text(
-            text = "VERIFIED SKILLS",
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp,
-            color = Color(0xFF94A3B8)
-          )
-          Spacer(modifier = Modifier.height(6.dp))
-
-          // Skills Flow Row
-          Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            val chunked = passportSkills.chunked(2)
-            chunked.forEach { rowSkills ->
-              Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(6.dp)
-              ) {
-                rowSkills.forEach { skill ->
-                  Surface(
-                    shape = RoundedCornerShape(6.dp),
-                    color = Color.White.copy(alpha = 0.1f),
-                    modifier = Modifier.weight(1f)
-                  ) {
-                    Row(
-                      modifier = Modifier.padding(horizontal = 8.dp, vertical = 5.dp),
-                      verticalAlignment = Alignment.CenterVertically
-                    ) {
-                      Icon(
-                        imageVector = Icons.Default.Check,
-                        contentDescription = null,
-                        tint = Color(0xFF34D399),
-                        modifier = Modifier.size(12.dp)
-                      )
-                      Spacer(modifier = Modifier.width(4.dp))
-                      Text(
-                        text = skill,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Medium,
-                        color = Color.White,
-                        maxLines = 1
-                      )
-                    }
-                  }
-                }
-              }
-            }
-          }
-
-          Spacer(modifier = Modifier.height(14.dp))
-
-          // Certifications
-          Text(
-            text = "CERTIFICATIONS",
-            fontSize = 10.sp,
-            fontWeight = FontWeight.Bold,
-            letterSpacing = 1.sp,
-            color = Color(0xFF94A3B8)
-          )
-          Spacer(modifier = Modifier.height(6.dp))
-
-          passportCertifications.forEach { cert ->
-            Row(
-              verticalAlignment = Alignment.CenterVertically,
-              modifier = Modifier.padding(vertical = 2.dp)
-            ) {
-              Icon(
-                imageVector = Icons.Default.MilitaryTech,
-                contentDescription = null,
-                tint = Color(0xFFF59E0B),
-                modifier = Modifier.size(14.dp)
-              )
-              Spacer(modifier = Modifier.width(6.dp))
-              Text(
-                text = cert,
-                fontSize = 11.sp,
-                color = Color.White.copy(alpha = 0.9f)
-              )
-            }
-          }
-        }
-      }
-    }
-
-    // ==========================================
-    // SKILL GROWTH SECTION
-    // ==========================================
-    item {
-      Row(
-        modifier = Modifier.fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
-      ) {
-        Column {
-          Text(
-            text = "Skill Growth",
-            fontSize = 18.sp,
-            fontWeight = FontWeight.Bold,
-            color = HomezyText
-          )
-          Text(
-            text = "AI recommendations & Co-op subsidized upskilling",
-            fontSize = 12.sp,
-            color = HomezyTextSecondary
-          )
-        }
-
-        HomezyBadge(
-          text = "100% CO-OP FUNDED",
-          containerColor = Color(0xFFFEF3C7),
-          contentColor = Color(0xFFB45309)
-        )
-      }
-    }
-
-    // Recommended Skills Pills
-    item {
-      HomezyCard(modifier = Modifier.fillMaxWidth()) {
-        Text(
-          text = "High-Demand Skills in Your Area (Koramangala / Indiranagar):",
-          fontSize = 12.sp,
-          fontWeight = FontWeight.Bold,
-          color = HomezyText
-        )
-        Spacer(modifier = Modifier.height(8.dp))
-
-        recommendedSkills.forEach { (skill, benefit) ->
-          Row(
-            modifier = Modifier
-              .fillMaxWidth()
-              .padding(vertical = 4.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-          ) {
-            Row(
-              modifier = Modifier.weight(1f),
-              verticalAlignment = Alignment.CenterVertically
-            ) {
-              Icon(
-                imageVector = Icons.Default.TrendingUp,
-                contentDescription = null,
-                tint = HomezyPrimary,
-                modifier = Modifier.size(16.dp)
-              )
-              Spacer(modifier = Modifier.width(6.dp))
-              Text(
-                text = skill,
-                fontSize = 12.sp,
-                fontWeight = FontWeight.SemiBold,
-                color = HomezyText
-              )
-            }
-            Surface(
-              shape = RoundedCornerShape(6.dp),
-              color = HomezySurfaceVariant
-            ) {
-              Text(
-                text = benefit,
-                fontSize = 10.sp,
-                fontWeight = FontWeight.Bold,
-                color = HomezyPrimary,
-                modifier = Modifier.padding(horizontal = 6.dp, vertical = 2.dp)
-              )
-            }
-          }
-        }
-      }
-    }
-
-    // Recommended Training Courses
-    item {
-      Text(
-        text = "Recommended Training Modules",
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Bold,
-        color = HomezyText
-      )
-    }
-
-    items(recommendedTrainings) { training ->
-      val isEnrolled = enrolledCourses.contains(training.title)
-
-      HomezyCard(
-        modifier = Modifier.fillMaxWidth(),
-        elevation = 2.dp
-      ) {
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.Top
-        ) {
-          Column(modifier = Modifier.weight(1f)) {
-            Text(
-              text = training.title,
-              fontSize = 15.sp,
-              fontWeight = FontWeight.Bold,
-              color = HomezyText
-            )
-            Spacer(modifier = Modifier.height(2.dp))
-            Text(
-              text = training.duration,
-              fontSize = 12.sp,
-              color = HomezyTextSecondary
-            )
-            Text(
-              text = "By ${training.instructor}",
-              fontSize = 11.sp,
-              color = HomezyTextSecondary
-            )
-          }
-
-          HomezyBadge(
-            text = training.tag,
-            containerColor = HomezyPrimaryContainer,
-            contentColor = HomezyPrimary
-          )
-        }
-
-        Spacer(modifier = Modifier.height(8.dp))
-
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.SpaceBetween,
-          verticalAlignment = Alignment.CenterVertically
-        ) {
-          Text(
-            text = training.subsidy,
-            fontSize = 11.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color(0xFF15803D)
-          )
-
-          HomezyButton(
-            text = if (isEnrolled) "Enrolled ✓" else "Enroll for Free",
-            onClick = {
-              if (!isEnrolled) {
-                enrolledCourses = enrolledCourses + training.title
-                showEnrollSuccessDialog = training.title
-              }
-            },
-            variant = if (isEnrolled) ButtonVariant.SECONDARY else ButtonVariant.PRIMARY,
-            modifier = Modifier.height(36.dp),
-            testTag = "btn_enroll_${training.id}"
-          )
-        }
-      }
-    }
-
-    // Co-op Membership & Federation Info
-    item {
-      HomezyCard(modifier = Modifier.fillMaxWidth()) {
-        Text(
-          text = "Cooperative Governance & Rights",
-          fontWeight = FontWeight.Bold,
-          fontSize = 14.sp,
-          color = HomezyText
-        )
-        Spacer(modifier = Modifier.height(6.dp))
-        Text(
-          text = "As an active Co-op Member, you hold 1 equal vote in quarterly tariff setting, welfare pool allocation, and federation leadership elections.",
-          fontSize = 12.sp,
-          color = HomezyTextSecondary,
-          lineHeight = 16.sp
-        )
-        Spacer(modifier = Modifier.height(10.dp))
-        Row(
-          modifier = Modifier.fillMaxWidth(),
-          horizontalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-          HomezyButton(
-            text = "Annual General Meeting",
-            onClick = {},
-            variant = ButtonVariant.OUTLINE,
-            modifier = Modifier.weight(1f)
-          )
-          HomezyButton(
-            text = "Voting Booth",
-            onClick = {},
-            variant = ButtonVariant.OUTLINE,
-            modifier = Modifier.weight(1f)
-          )
-        }
-      }
-    }
-
-    // Role Switchers & Logout
-    item {
-      Column(
-        modifier = Modifier.fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-      ) {
-        HomezyButton(
-          text = "Switch to Customer Portal",
-          onClick = onSwitchToCustomer,
-          variant = ButtonVariant.OUTLINE,
-          icon = Icons.Default.SwapHoriz,
-          fullWidth = true,
-          testTag = "switch_to_customer_from_worker"
-        )
-
-        HomezyButton(
-          text = "Switch to Admin Co-op Panel",
-          onClick = onSwitchToAdmin,
-          variant = ButtonVariant.OUTLINE,
-          icon = Icons.Default.AdminPanelSettings,
-          fullWidth = true,
-          testTag = "switch_to_admin_from_worker"
-        )
-
-        HomezyButton(
-          text = "Sign Out",
-          onClick = onLogout,
-          variant = ButtonVariant.TEXT,
-          icon = Icons.Default.Logout,
-          fullWidth = true,
-          testTag = "worker_logout_button"
-        )
+        Icon(Icons.Default.Logout, contentDescription = null, modifier = Modifier.size(16.dp))
+        Spacer(modifier = Modifier.width(8.dp))
+        Text("Logout", fontSize = 14.sp, fontWeight = FontWeight.Bold)
       }
     }
   }
 
-  // QR Token Dialog
-  if (showQrDialog) {
+  // Info Dialog
+  if (showInfoDialog != null) {
     AlertDialog(
-      onDismissRequest = { showQrDialog = false },
-      title = { Text("Worker Verifiable QR Token") },
-      text = {
-        Column(
-          horizontalAlignment = Alignment.CenterHorizontally,
-          modifier = Modifier.fillMaxWidth()
-        ) {
-          Box(
-            modifier = Modifier
-              .size(160.dp)
-              .clip(RoundedCornerShape(12.dp))
-              .background(Color.White)
-              .border(2.dp, HomezyPrimary, RoundedCornerShape(12.dp)),
-            contentAlignment = Alignment.Center
-          ) {
-            Icon(Icons.Default.QrCode2, contentDescription = "QR Code", tint = HomezyText, modifier = Modifier.size(130.dp))
-          }
-          Spacer(modifier = Modifier.height(10.dp))
-          Text(
-            text = "Scan with any UPI / Govt. Digilocker app to verify Rahul Sharma's credentials and active police clearance.",
-            fontSize = 12.sp,
-            color = HomezyTextSecondary,
-            lineHeight = 16.sp
-          )
-        }
-      },
+      onDismissRequest = { showInfoDialog = null },
+      title = { Text(showInfoDialog?.first ?: "Details", fontWeight = FontWeight.Bold, color = HomezyText) },
+      text = { Text(showInfoDialog?.second ?: "", fontSize = 14.sp, color = HomezyText) },
       confirmButton = {
-        HomezyButton(
-          text = "Close",
-          onClick = { showQrDialog = false }
-        )
-      }
-    )
-  }
-
-  if (showEnrollSuccessDialog != null) {
-    AlertDialog(
-      onDismissRequest = { showEnrollSuccessDialog = null },
-      title = {
-        Row(verticalAlignment = Alignment.CenterVertically) {
-          Icon(Icons.Default.CheckCircle, contentDescription = null, tint = Color(0xFF15803D))
-          Spacer(modifier = Modifier.width(8.dp))
-          Text("Enrolled Successfully!")
+        TextButton(onClick = { showInfoDialog = null }) {
+          Text("Close", fontWeight = FontWeight.Bold, color = HomezyPrimary)
         }
-      },
-      text = {
-        Text("You have been enrolled in '$showEnrollSuccessDialog'. Training materials and class timings have been sent to your WhatsApp.")
-      },
-      confirmButton = {
-        HomezyButton(
-          text = "Great!",
-          onClick = { showEnrollSuccessDialog = null }
-        )
       }
     )
   }
 }
 
 @Composable
-private fun PassportMetricItem(
-  label: String,
-  value: String,
-  icon: androidx.compose.ui.graphics.vector.ImageVector
+private fun WorkerProfileRow(
+  title: String,
+  subtitle: String? = null,
+  icon: ImageVector,
+  onClick: () -> Unit
 ) {
-  Column(horizontalAlignment = Alignment.CenterHorizontally) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-      Icon(
-        imageVector = icon,
-        contentDescription = null,
-        tint = Color(0xFFF59E0B),
-        modifier = Modifier.size(14.dp)
-      )
-      Spacer(modifier = Modifier.width(4.dp))
-      Text(
-        text = value,
-        fontSize = 14.sp,
-        fontWeight = FontWeight.Bold,
-        color = Color.White
-      )
+  Row(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clickable { onClick() }
+      .padding(vertical = 12.dp, horizontal = 4.dp),
+    verticalAlignment = Alignment.CenterVertically,
+    horizontalArrangement = Arrangement.SpaceBetween
+  ) {
+    Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
+      Icon(icon, contentDescription = null, tint = HomezyPrimary, modifier = Modifier.size(20.dp))
+      Spacer(modifier = Modifier.width(12.dp))
+      Text(title, fontSize = 14.sp, fontWeight = FontWeight.Medium, color = HomezyText)
     }
-    Spacer(modifier = Modifier.height(2.dp))
-    Text(
-      text = label,
-      fontSize = 11.sp,
-      color = Color(0xFF94A3B8)
-    )
+
+    Row(verticalAlignment = Alignment.CenterVertically) {
+      if (subtitle != null) {
+        Text(subtitle, fontSize = 12.sp, color = HomezyTextSecondary)
+        Spacer(modifier = Modifier.width(6.dp))
+      }
+      Icon(Icons.AutoMirrored.Filled.ArrowForward, contentDescription = null, tint = HomezyTextSecondary, modifier = Modifier.size(14.dp))
+    }
   }
 }
-
-data class TrainingItem(
-  val id: String,
-  val title: String,
-  val duration: String,
-  val instructor: String,
-  val subsidy: String,
-  val tag: String
-)

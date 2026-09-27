@@ -32,10 +32,10 @@ class SihDemoFlowRobolectricTest {
     // 2. Customer Home is displayed
     composeRule.onNodeWithTag("customer_home_screen").assertIsDisplayed()
 
-    // 3. Navigate to Services tab
-    composeRule.onNodeWithTag("nav__customer_services").performClick()
+    // 3. Navigate to Messages tab
+    composeRule.onNodeWithTag("nav__customer_messages").performClick()
     composeRule.waitForIdle()
-    composeRule.onNodeWithTag("customer_services_screen").assertIsDisplayed()
+    composeRule.onNodeWithTag("customer_messages_screen").assertIsDisplayed()
 
     // 4. Navigate to Bookings tab
     composeRule.onNodeWithTag("nav__customer_bookings").performClick()

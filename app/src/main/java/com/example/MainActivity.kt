@@ -184,8 +184,7 @@ fun HomezyApp(
         if (activeUser != null) {
           HomezyAuthenticatedTopBar(
             currentUser = activeUser,
-            onLogout = { performLogout() },
-            onAttemptRoleSwitch = { role -> handleRoleAccess(role) }
+            onLogout = { performLogout() }
           )
           if (activeUser.role == AppRole.ADMIN) {
             AdminNavigationBar(
